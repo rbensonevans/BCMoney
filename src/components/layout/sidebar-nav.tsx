@@ -1,0 +1,85 @@
+
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { 
+  LayoutDashboard, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Send, 
+  Users, 
+  UserCircle, 
+  LogOut,
+  Wallet
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarFooter, 
+  SidebarHeader, 
+  SidebarMenu, 
+  SidebarMenuButton, 
+  SidebarMenuItem,
+  SidebarTrigger
+} from "@/components/ui/sidebar"
+
+const menuItems = [
+  { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { title: "Deposit", icon: ArrowDownLeft, href: "/deposit" },
+  { title: "Withdraw", icon: ArrowUpRight, href: "/withdraw" },
+  { title: "Send Money", icon: Send, href: "/send" },
+  { title: "Recipients", icon: Users, href: "/recipients" },
+  { title: "Profile", icon: UserCircle, href: "/profile" },
+]
+
+export function SidebarNav() {
+  const pathname = usePathname()
+
+  return (
+    <Sidebar variant="inset" collapsible="icon" className="border-r">
+      <SidebarHeader className="p-4 flex flex-row items-center gap-2">
+        <div className="bg-primary h-8 w-8 rounded-lg flex items-center justify-center text-primary-foreground">
+          <Wallet className="h-5 w-5" />
+        </div>
+        <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">BCMoney</span>
+      </SidebarHeader>
+      <SidebarContent className="px-2">
+        <SidebarMenu>
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton 
+                asChild 
+                isActive={pathname === item.href}
+                tooltip={item.title}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-accent hover:text-accent-foreground",
+                  pathname === item.href && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                )}
+              >
+                <Link href={item.href}>
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+      <SidebarFooter className="p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              onClick={() => window.location.href = "/"}
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
