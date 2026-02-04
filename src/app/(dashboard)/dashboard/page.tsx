@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +11,7 @@ import {
   User
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 const transactions = [
   { id: 1, type: "Sent", recipient: "Alice (UniqueName: @alice)", amount: -150.00, date: "2023-10-25", status: "Completed" },
