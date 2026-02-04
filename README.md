@@ -1,5 +1,3 @@
-# Firebase Studio
+# BCMoney
+BCMoney lives on-chain and off-chain and simplifies the movement of money with no fees.
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
