@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   LayoutDashboard, 
   ArrowUpRight, 
@@ -21,9 +21,11 @@ import {
   SidebarHeader, 
   SidebarMenu, 
   SidebarMenuButton, 
-  SidebarMenuItem,
-  SidebarTrigger
+  SidebarMenuItem
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/firebase/provider"
+import { signOut } from "firebase/auth"
+import { useToast } from "@/hooks/use-toast"
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -36,6 +38,26 @@ const menuItems = [
 
 export function SidebarNav() {
   const pathname = usePathname()
+  const auth = useAuth()
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      })
+      router.push("/")
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: error.message,
+      })
+    }
+  }
 
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-r">
@@ -72,7 +94,7 @@ export function SidebarNav() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              onClick={() => window.location.href = "/"}
+              onClick={handleLogout}
             >
               <LogOut className="h-5 w-5" />
               <span>Logout</span>
