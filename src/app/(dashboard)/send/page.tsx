@@ -1,16 +1,20 @@
 
 "use client"
 
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Send, Search, Star, Clock } from "lucide-react"
+import { Send, Search, Clock, Wallet } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export default function SendPage() {
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token') || 'USDT'
+  
   const [recipient, setRecipient] = useState("")
   const [amount, setAmount] = useState("")
   const { toast } = useToast()
@@ -19,7 +23,7 @@ export default function SendPage() {
     e.preventDefault()
     toast({
       title: "Funds Sent",
-      description: `Successfully sent $${amount} to ${recipient}`,
+      description: `Successfully sent ${amount} ${token} to ${recipient}`,
     })
   }
 
@@ -32,14 +36,14 @@ export default function SendPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-primary">Send Money</h1>
+        <h1 className="text-3xl font-bold text-primary">Send {token}</h1>
         <p className="text-muted-foreground">Instantly transfer funds to any BCMoney user</p>
       </div>
 
       <Card className="shadow-lg border-none overflow-hidden">
         <div className="bg-primary p-6 text-primary-foreground flex flex-col items-center">
-          <p className="text-sm opacity-80 uppercase tracking-widest mb-1">Available to Send</p>
-          <p className="text-4xl font-bold">$12,450.00</p>
+          <p className="text-sm opacity-80 uppercase tracking-widest mb-1">Available {token}</p>
+          <p className="text-4xl font-bold">1,250.00 {token}</p>
         </div>
         <CardHeader>
           <CardTitle>Transfer Details</CardTitle>
@@ -64,9 +68,9 @@ export default function SendPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount (USD)</Label>
+                <Label htmlFor="amount">Amount ({token})</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input 
                     id="amount" 
                     type="number" 
@@ -74,8 +78,11 @@ export default function SendPage() {
                     required 
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="pl-7"
+                    className="pl-10"
                   />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                    {token}
+                  </span>
                 </div>
               </div>
             </div>
@@ -95,6 +102,7 @@ export default function SendPage() {
               {recentRecipients.map((user) => (
                 <button 
                   key={user.handle} 
+                  type="button"
                   onClick={() => setRecipient(user.handle)}
                   className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-muted/50 border border-transparent hover:border-border transition-all"
                 >
