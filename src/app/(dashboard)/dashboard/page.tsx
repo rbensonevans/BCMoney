@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -165,7 +164,7 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{searchQuery ? "Search Results" : "Top 25 Market Overview"}</CardTitle>
+              <CardTitle>{searchQuery ? "Search Results" : "Top 30 Market Overview"}</CardTitle>
               <CardDescription>
                 {searchQuery ? `Found ${filteredTokens.length} tokens` : "Current rankings by market capitalization"}
               </CardDescription>
