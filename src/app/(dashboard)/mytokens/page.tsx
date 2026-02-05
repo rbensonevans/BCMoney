@@ -1,7 +1,7 @@
 
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { 
   Table, 
   TableBody, 
@@ -38,13 +38,7 @@ export default function MyTokensPage() {
       </div>
 
       <Card className="shadow-sm border-none">
-        <CardHeader>
-          <CardTitle>Top 10 Rankings</CardTitle>
-          <CardDescription>
-            The current industry leaders by market capitalization
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="rounded-md border">
             <Table>
               <TableHeader>
