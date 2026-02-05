@@ -1,0 +1,257 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "middleName": {
+          "type": "string",
+          "description": "The user's middle name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        },
+        "address": {
+          "type": "string",
+          "description": "The user's physical address."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL of the user's profile photo.",
+          "format": "uri"
+        },
+        "uniqueName": {
+          "type": "string",
+          "description": "The user's unique name or username."
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "uniqueName"
+      ]
+    },
+    "Account": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Account",
+      "type": "object",
+      "description": "Represents a user's account information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the account."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:1 Account)"
+        },
+        "accountNumber": {
+          "type": "string",
+          "description": "The user's account number."
+        },
+        "ethereumPublicAddress": {
+          "type": "string",
+          "description": "The user's Ethereum public address."
+        },
+        "balance": {
+          "type": "number",
+          "description": "The user's current balance."
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "accountNumber",
+        "ethereumPublicAddress"
+      ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "type": "object",
+      "description": "Represents a transaction.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction."
+        },
+        "accountId": {
+          "type": "string",
+          "description": "Reference to Account. (Relationship: Account 1:N Transaction)"
+        },
+        "date": {
+          "type": "string",
+          "description": "The date and time of the transaction.",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the transaction."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of transaction (e.g., deposit, withdrawal, transfer)."
+        },
+        "toAccountId": {
+          "type": "string",
+          "description": "Reference to Account. (Relationship: Account 1:N Transaction). The ID of the recipient account if it is a sending transaction."
+        }
+      },
+      "required": [
+        "id",
+        "accountId",
+        "date",
+        "amount",
+        "type"
+      ]
+    },
+    "Recipient": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Recipient",
+      "type": "object",
+      "description": "Represents a recipient in the user's recipient lists.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the recipient."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Recipient)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the recipient."
+        },
+        "accountNumber": {
+          "type": "string",
+          "description": "The account number of the recipient."
+        },
+        "listType": {
+          "type": "string",
+          "description": "The type of list the recipient belongs to (e.g., Family, Friends, General)."
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "name",
+        "accountNumber",
+        "listType"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/profile",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information.  Accessible only by the user with the corresponding userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/accounts/{accountId}",
+        "definition": {
+          "entityName": "Account",
+          "schema": {
+            "$ref": "#/backend/entities/Account"
+          },
+          "description": "Stores account information for each user. Accessible only by the user with the corresponding userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "accountId",
+              "description": "The unique identifier of the account."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/accounts/{accountId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores transaction history for each account. Accessible only by the user with the corresponding userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "accountId",
+              "description": "The unique identifier of the account."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique identifier of the transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/recipients/{recipientId}",
+        "definition": {
+          "entityName": "Recipient",
+          "schema": {
+            "$ref": "#/backend/entities/Recipient"
+          },
+          "description": "Stores the user's recipients lists. Accessible only by the user with the corresponding userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "recipientId",
+              "description": "The unique identifier of the recipient."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the BCMoney application. Each user's data is isolated under their unique user ID, facilitating simple and secure data access rules. The structure prioritizes path-based ownership for user-specific data and avoids hierarchical authorization dependencies by storing roles in the database. This approach ensures atomic operations (transactions/batches) and simplifies debugging. \n\n*   **User Profiles:** User profiles are stored under `/users/{userId}/profile`, enabling easy management and updates of profile information.\n*   **Accounts:** Accounts are stored under `/users/{userId}/accounts/{accountId}`.  This structure ensures that only the authenticated user can access their account information.\n*   **Transactions:** Transactions are stored under `/users/{userId}/accounts/{accountId}/transactions/{transactionId}`.  This enforces clear ownership and allows for efficient retrieval of a user's transaction history.\n*   **Recipients:** Recipients are stored under `/users/{userId}/recipients/{recipientId}`. This structure provides private data and allows for easy management of user's recipients lists.\n\nThis design achieves **Authorization Independence** by avoiding `get()` calls in security rules.  Each document's access control is determined solely by the path and the authenticated user's ID (`request.auth.uid`).  For example, accessing a transaction requires knowing the specific `userId` and `accountId` under which it resides, and the security rules only need to verify that `request.auth.uid == userId`.\n\nThe structure supports the required **QAPs** (Rules are not Filters) by using structural segregation. Each collection (e.g., `/users/{userId}/accounts`) contains only documents with the same security requirements (i.e., accessible only by the user with ID `userId`). This eliminates the need for complex filtering in security rules and ensures that `list` operations are secure and efficient."
+  }
+}
