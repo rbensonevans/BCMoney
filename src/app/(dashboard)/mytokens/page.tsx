@@ -34,7 +34,6 @@ export default function MyTokensPage() {
           <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
             <Award className="h-8 w-8" /> MyTokens
           </h1>
-          <p className="text-muted-foreground">Premier assets curated from the market leaders</p>
         </div>
       </div>
 
