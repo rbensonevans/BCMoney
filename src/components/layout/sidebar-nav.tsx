@@ -5,9 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Send, 
   Users, 
   Wallet,
   Coins
@@ -25,9 +22,6 @@ import {
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { title: "MyTokens", icon: Coins, href: "/mytokens" },
-  { title: "Deposit", icon: ArrowDownLeft, href: "/deposit" },
-  { title: "Withdraw", icon: ArrowUpRight, href: "/withdraw" },
-  { title: "Send Money", icon: Send, href: "/send" },
   { title: "Recipients", icon: Users, href: "/recipients" },
 ]
 
