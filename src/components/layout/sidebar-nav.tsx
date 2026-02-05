@@ -2,30 +2,24 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, 
   ArrowUpRight, 
   ArrowDownLeft, 
   Send, 
   Users, 
-  UserCircle, 
-  LogOut,
   Wallet
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { 
   Sidebar, 
   SidebarContent, 
-  SidebarFooter, 
   SidebarHeader, 
   SidebarMenu, 
   SidebarMenuButton, 
   SidebarMenuItem
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/firebase/provider"
-import { signOut } from "firebase/auth"
-import { useToast } from "@/hooks/use-toast"
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -33,31 +27,10 @@ const menuItems = [
   { title: "Withdraw", icon: ArrowUpRight, href: "/withdraw" },
   { title: "Send Money", icon: Send, href: "/send" },
   { title: "Recipients", icon: Users, href: "/recipients" },
-  { title: "Profile", icon: UserCircle, href: "/profile" },
 ]
 
 export function SidebarNav() {
   const pathname = usePathname()
-  const auth = useAuth()
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      })
-      router.push("/")
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Logout failed",
-        description: error.message,
-      })
-    }
-  }
 
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-r">
@@ -89,19 +62,6 @@ export function SidebarNav() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Logout</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   )
 }
