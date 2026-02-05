@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -42,21 +41,31 @@ export default function LoginPage() {
     }
 
     setIsLoading(true)
-    
-    try {
-      if (isRegistering) {
-        initiateEmailSignUp(auth, email, password)
-      } else {
-        initiateEmailSignIn(auth, email, password)
-      }
-      // Note: Redirection happens via useEffect when auth state changes
-    } catch (error: any) {
+
+    const handleAuthError = (error: any) => {
       setIsLoading(false)
+      let errorMessage = "Something went wrong. Please try again."
+
+      // Map common Firebase Auth errors to user-friendly messages
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        errorMessage = "Invalid email or password. Please check your credentials and try again."
+      } else if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "This email is already associated with an account."
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Too many failed attempts. Please try again later."
+      }
+
       toast({
         variant: "destructive",
-        title: "Authentication Error",
-        description: error.message || "Something went wrong. Please try again.",
+        title: "Authentication Failed",
+        description: errorMessage,
       })
+    }
+    
+    if (isRegistering) {
+      initiateEmailSignUp(auth, email, password, handleAuthError)
+    } else {
+      initiateEmailSignIn(auth, email, password, handleAuthError)
     }
   }
 
