@@ -31,6 +31,16 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (isRegistering && password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Weak Password",
+        description: "Password must be at least 6 characters long.",
+      })
+      return
+    }
+
     setIsLoading(true)
     
     try {
@@ -105,6 +115,11 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
               />
+              {isRegistering && (
+                <p className="text-xs text-muted-foreground">
+                  Minimum 6 characters required.
+                </p>
+              )}
             </div>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -118,7 +133,10 @@ export default function LoginPage() {
             <Button 
               variant="link" 
               className="p-0 h-auto text-secondary"
-              onClick={() => setIsRegistering(!isRegistering)}
+              onClick={() => {
+                setIsRegistering(!isRegistering)
+                setIsLoading(false)
+              }}
             >
               {isRegistering ? "Login now" : "Register now"}
             </Button>
