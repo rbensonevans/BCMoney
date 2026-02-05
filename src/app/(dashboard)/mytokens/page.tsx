@@ -11,7 +11,7 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { TrendingUp, TrendingDown, Coins, Award } from "lucide-react"
+import { TrendingUp, TrendingDown, Award } from "lucide-react"
 
 const TOP_10_TOKENS = [
   { id: '1', name: 'Bitcoin', symbol: 'BTC', price: 67432.10, change: 2.45, marketCap: '1.32T' },
@@ -36,26 +36,6 @@ export default function MyTokensPage() {
           </h1>
           <p className="text-muted-foreground">Premier assets curated from the market leaders</p>
         </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {TOP_10_TOKENS.slice(0, 4).map(token => (
-          <Card key={token.id} className="bg-card shadow-sm border-none">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start mb-2">
-                <div className="text-sm font-bold text-muted-foreground uppercase">{token.symbol}</div>
-                <div className={cn(
-                  "text-xs font-bold",
-                  token.change >= 0 ? "text-green-600" : "text-red-600"
-                )}>
-                  {token.change >= 0 ? "+" : ""}{token.change}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold">${token.price.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">{token.name}</div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       <Card className="shadow-sm border-none">
