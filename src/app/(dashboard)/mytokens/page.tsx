@@ -89,7 +89,7 @@ export default function MyTokensPage() {
                     <TableCell>
                       <Button variant="link" asChild className="text-secondary p-0 h-auto">
                         <Link href={`/send?token=${token.symbol}`}>
-                          <Send className="h-3 w-3 mr-1" /> Send Money
+                          <Send className="h-3 w-3 mr-1" /> Send
                         </Link>
                       </Button>
                     </TableCell>
