@@ -1,6 +1,6 @@
-
 "use client"
 
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,7 +14,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { Repeat, ArrowRightLeft, Wallet } from "lucide-react"
+import { Repeat, ArrowRightLeft, Wallet, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 const TOKENS = [
@@ -54,6 +54,11 @@ export default function TradePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="space-y-2">
+        <Button variant="ghost" asChild className="p-0 h-auto mb-2 text-muted-foreground hover:text-primary">
+          <Link href="/mytokens" className="flex items-center gap-1 text-xs">
+            <ArrowLeft className="h-3 w-3" /> Back to MyTokens
+          </Link>
+        </Button>
         <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
           <Repeat className="h-8 w-8" /> Trade Tokens
         </h1>

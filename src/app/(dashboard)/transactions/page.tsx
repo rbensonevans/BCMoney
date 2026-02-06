@@ -1,8 +1,9 @@
-
 "use client"
 
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { 
   Table, 
   TableBody, 
@@ -11,7 +12,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send } from "lucide-react"
+import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const MOCK_TXNS = [
@@ -29,6 +30,11 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
+        <Button variant="ghost" asChild className="p-0 h-auto mb-2 text-muted-foreground hover:text-primary">
+          <Link href="/mytokens" className="flex items-center gap-1 text-xs">
+            <ArrowLeft className="h-3 w-3" /> Back to MyTokens
+          </Link>
+        </Button>
         <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
           <History className="h-8 w-8" /> Transactions
         </h1>

@@ -1,13 +1,13 @@
-
 "use client"
 
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Send, Search, Clock, Wallet } from "lucide-react"
+import { Send, Search, Clock, Wallet, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -36,6 +36,11 @@ export default function SendPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="space-y-2">
+        <Button variant="ghost" asChild className="p-0 h-auto mb-2 text-muted-foreground hover:text-primary">
+          <Link href="/mytokens" className="flex items-center gap-1 text-xs">
+            <ArrowLeft className="h-3 w-3" /> Back to MyTokens
+          </Link>
+        </Button>
         <h1 className="text-3xl font-bold text-primary">Send {token}</h1>
         <p className="text-muted-foreground">Instantly transfer funds to any BCMoney user</p>
       </div>

@@ -1,11 +1,11 @@
-
 "use client"
 
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Copy, QrCode, ShieldCheck, Wallet } from "lucide-react"
+import { Copy, QrCode, ShieldCheck, Wallet, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function DepositPage() {
@@ -25,6 +25,11 @@ export default function DepositPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="space-y-2">
+        <Button variant="ghost" asChild className="p-0 h-auto mb-2 text-muted-foreground hover:text-primary">
+          <Link href="/mytokens" className="flex items-center gap-1 text-xs">
+            <ArrowLeft className="h-3 w-3" /> Back to MyTokens
+          </Link>
+        </Button>
         <h1 className="text-3xl font-bold text-primary">Deposit Funds</h1>
         <p className="text-muted-foreground">Send {token} to your BCMoney wallet</p>
       </div>
