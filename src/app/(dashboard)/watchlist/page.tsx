@@ -101,7 +101,7 @@ export default function WatchlistPage() {
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">24h Change</TableHead>
                   <TableHead className="text-right hidden md:table-cell">Market Cap</TableHead>
-                  <TableHead className="text-right w-[100px]">Action</TableHead>
+                  <TableHead className="text-right w-[80px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -149,11 +149,12 @@ export default function WatchlistPage() {
                       <TableCell className="text-right">
                         <Button 
                           variant="ghost" 
-                          size="sm" 
-                          className="text-destructive hover:bg-destructive/10"
+                          size="icon" 
+                          className="h-8 w-8 text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50"
                           onClick={() => toggleWatchlist(token.id, token.name)}
+                          title="Remove from watchlist"
                         >
-                          Unstar
+                          <Star className="h-4 w-4 fill-current" />
                         </Button>
                       </TableCell>
                     </TableRow>
