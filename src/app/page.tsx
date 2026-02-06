@@ -72,7 +72,7 @@ export default function LandingPage() {
 
   if (isUserLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen w-full flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
@@ -80,7 +80,7 @@ export default function LandingPage() {
 
   if (!showAuth && !user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background text-center space-y-8">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-background text-center space-y-8">
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <div className="bg-primary p-6 rounded-3xl shadow-2xl w-fit mx-auto mb-6">
             <Wallet className="h-16 w-16 text-primary-foreground" />
@@ -114,7 +114,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-background">
       <div className="mb-8 flex flex-col items-center gap-2">
         <div className="bg-primary p-4 rounded-2xl shadow-xl">
           <Wallet className="h-10 w-10 text-primary-foreground" />
