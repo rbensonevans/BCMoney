@@ -251,11 +251,14 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
   }
   if (token.symbol === 'UNI') {
     return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#FFD7E9"/>
-          <path d="M24.5 15.5C24.5 14.5 23.8 13.5 23 12.8C22.2 12.1 21.2 11.7 20.2 11.5L21.5 8.5L16.5 10.5L15.5 8L14 10.8C13 11 12 11.5 11.2 12.2C10.4 12.9 9.8 13.8 9.5 14.8C9.2 15.8 9.2 16.8 9.5 17.8C9.8 18.8 10.4 19.7 11.2 20.4C12 21.1 13 21.6 14 21.8C15 22 16 22 17 21.8C18 21.6 19 21.1 19.8 20.4C20.6 19.7 21.2 18.8 21.5 17.8L23 18.5L24.5 15.5Z" fill="#FF007A"/>
-        </svg>
+      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
+        <Image 
+          src="https://s2.coinmarketcap.com/static/img/coins/64x64/7083.png" 
+          alt="UNI" 
+          width={size} 
+          height={size} 
+          className="object-cover"
+        />
       </div>
     )
   }
