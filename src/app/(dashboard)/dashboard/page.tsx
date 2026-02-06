@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -167,6 +168,20 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
           <circle cx="16" cy="16" r="16" fill="#FF0013"/>
           <path d="M24 12L16 5L8 12L16 27L24 12ZM16 8L21 12.5L16 22L11 12.5L16 8Z" fill="white"/>
           <path d="M16 8L11 12.5L16 22V8Z" fill="white" fillOpacity="0.3"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'DOT') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="black"/>
+          <circle cx="16" cy="10" r="3" fill="white"/>
+          <circle cx="21" cy="13" r="3" fill="white"/>
+          <circle cx="20" cy="19" r="3" fill="white"/>
+          <circle cx="12" cy="19" r="3" fill="white"/>
+          <circle cx="11" cy="13" r="3" fill="white"/>
         </svg>
       </div>
     )

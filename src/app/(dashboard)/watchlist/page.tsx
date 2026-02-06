@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useMemo } from "react"
@@ -166,6 +167,20 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'DOT') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="black"/>
+          <circle cx="16" cy="10" r="3" fill="white"/>
+          <circle cx="21" cy="13" r="3" fill="white"/>
+          <circle cx="20" cy="19" r="3" fill="white"/>
+          <circle cx="12" cy="19" r="3" fill="white"/>
+          <circle cx="11" cy="13" r="3" fill="white"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
@@ -199,15 +214,20 @@ export default function WatchlistPage() {
   const toggleWatchlist = (tokenId: string, tokenName: string) => {
     if (!profileRef || !user) return;
 
-    const newWatchlist = watchlist.filter((id: string) => id !== tokenId);
+    const isAlreadyAdded = watchlist.includes(tokenId)
+    const newWatchlist = isAlreadyAdded 
+      ? watchlist.filter((id: string) => id !== tokenId)
+      : [...watchlist, tokenId];
+
     setDocumentNonBlocking(profileRef, { 
       watchlist: newWatchlist,
-      id: user.uid 
+      id: user.uid,
+      email: user.email || ""
     }, { merge: true });
 
     toast({
-      title: "Removed from Watchlist",
-      description: `${tokenName} has been removed from your tracking list.`
+      title: isAlreadyAdded ? "Removed from Watchlist" : "Added to Watchlist",
+      description: isAlreadyAdded ? `${tokenName} has been removed from your tracking list.` : `${tokenName} is now being tracked.`
     })
   }
 
