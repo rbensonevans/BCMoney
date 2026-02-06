@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -196,6 +195,7 @@ export default function DashboardPage() {
                       Add to<br/>MyTokens
                     </div>
                   </TableHead>
+                  <TableHead className="w-[50px]">#</TableHead>
                   <TableHead>Asset</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">24h Change</TableHead>
@@ -206,12 +206,12 @@ export default function DashboardPage() {
               <TableBody>
                 {filteredTokens.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No results found for "{searchQuery}"
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTokens.map((token) => {
+                  filteredTokens.map((token, index) => {
                     const isOwned = ownedTokens.includes(token.id);
                     return (
                       <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
@@ -228,6 +228,9 @@ export default function DashboardPage() {
                           >
                             {isOwned && <CheckCircle2 className="h-4 w-4 text-white" />}
                           </button>
+                        </TableCell>
+                        <TableCell className="text-sm font-medium text-muted-foreground">
+                          {index + 1}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
