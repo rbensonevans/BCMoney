@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,12 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Wallet, ShieldCheck, Lock, Loader2 } from "lucide-react"
+import { Wallet, ShieldCheck, Lock, Loader2, ArrowRight } from "lucide-react"
 import { useAuth, useUser } from "@/firebase/provider"
 import { initiateEmailSignIn, initiateEmailSignUp } from "@/firebase/non-blocking-login"
 import { useToast } from "@/hooks/use-toast"
 
-export default function LoginPage() {
+export default function LandingPage() {
+  const [showAuth, setShowAuth] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isRegistering, setIsRegistering] = useState(false)
@@ -46,7 +48,6 @@ export default function LoginPage() {
       setIsLoading(false)
       let errorMessage = "Something went wrong. Please try again."
 
-      // Map common Firebase Auth errors to user-friendly messages
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
         errorMessage = "Invalid email or password. Please check your credentials and try again."
       } else if (error.code === 'auth/email-already-in-use') {
@@ -77,6 +78,41 @@ export default function LoginPage() {
     )
   }
 
+  if (!showAuth && !user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background text-center space-y-8">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="bg-primary p-6 rounded-3xl shadow-2xl w-fit mx-auto mb-6">
+            <Wallet className="h-16 w-16 text-primary-foreground" />
+          </div>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-primary">
+            BCMoney
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-lg mx-auto leading-tight">
+            Move Blockchain Money <span className="text-secondary font-bold">P2P & Feeless</span>.
+          </p>
+        </div>
+        
+        <Button 
+          size="lg" 
+          onClick={() => setShowAuth(true)}
+          className="h-16 px-10 text-xl font-bold bg-primary hover:bg-primary/90 shadow-xl rounded-full group transition-all"
+        >
+          Start <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+        </Button>
+
+        <div className="flex items-center gap-6 text-muted-foreground opacity-60 pt-8">
+          <div className="flex items-center gap-1 text-sm font-semibold">
+            <ShieldCheck className="h-4 w-4" /> Secured
+          </div>
+          <div className="flex items-center gap-1 text-sm font-semibold">
+            <Lock className="h-4 w-4" /> Private
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
       <div className="mb-8 flex flex-col items-center gap-2">
@@ -89,7 +125,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <Card className="w-full max-w-md shadow-2xl border-none">
+      <Card className="w-full max-w-md shadow-2xl border-none animate-in zoom-in duration-300">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
             {isRegistering ? "Create an Account" : "Login"}
@@ -130,7 +166,7 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isRegistering ? "Sign Up" : "Sign In"}
             </Button>
@@ -141,7 +177,7 @@ export default function LoginPage() {
             {isRegistering ? "Already have an account?" : "Don't have an account?"}{" "}
             <Button 
               variant="link" 
-              className="p-0 h-auto text-secondary"
+              className="p-0 h-auto text-secondary font-bold"
               onClick={() => {
                 setIsRegistering(!isRegistering)
                 setIsLoading(false)
@@ -156,6 +192,15 @@ export default function LoginPage() {
           </div>
         </CardFooter>
       </Card>
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => setShowAuth(false)}
+        className="mt-6 text-muted-foreground"
+      >
+        Back to Home
+      </Button>
     </div>
   )
 }
