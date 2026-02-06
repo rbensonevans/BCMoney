@@ -176,8 +176,8 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="16" fill="#E6007A"/>
-          <path d="M16 8C11.5817 8 8 11.5817 8 16C8 20.4183 11.5817 24 16 24C20.4183 24 24 20.4183 24 16C24 11.5817 20.4183 8 16 8Z" fill="white"/>
-          <circle cx="16" cy="16" r="2.5" fill="#E6007A"/>
+          <circle cx="16" cy="16" r="8" fill="white" />
+          <circle cx="16" cy="16" r="5" fill="#E6007A" />
         </svg>
       </div>
     )
@@ -188,6 +188,16 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="16" fill="#2A5ADA"/>
           <path d="M16 6.5L25.5 11.5V20.5L16 25.5L6.5 20.5V11.5L16 6.5ZM16 11.5L11.5 14V18L16 20.5L20.5 18V14L16 11.5Z" fill="white" fillRule="evenodd"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'MATIC') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#8247E5"/>
+          <path d="M23.3 11.2L19.4 8.9C19 8.7 18.4 8.7 18 8.9L14.1 11.2C13.7 11.4 13.5 11.8 13.5 12.3V16.8L12.5 17.4L8.7 15.2C8.3 15 7.7 15 7.3 15.2L3.4 17.5C3 17.7 2.8 18.1 2.8 18.6V23.1C2.8 23.6 3 24 3.4 24.2L7.3 26.5C7.7 26.7 8.3 26.7 8.7 26.5L12.6 24.2C13 24 13.2 23.6 13.2 23.1V18.6L14.2 18L18 20.2C18.4 20.4 19 20.4 19.4 20.2L23.3 17.9C23.7 17.7 23.9 17.3 23.9 16.8V12.3C23.9 11.8 23.7 11.4 23.3 11.2ZM11.6 22.2L8 24.3L4.4 22.2V18.9L8 16.8L11.6 18.9V22.2ZM22.3 16L18.7 18.1L15.1 16V12.7L18.7 10.6L22.3 12.7V16Z" fill="white"/>
         </svg>
       </div>
     )
