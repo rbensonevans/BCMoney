@@ -39,7 +39,8 @@ export default function WatchlistPage() {
   }, [firestore, user]);
 
   const { data: profileData, isLoading } = useDoc(profileRef);
-  const watchlist = profileData?.watchlist || [];
+  // Default to BTC and ETH if watchlist is not yet set in profile
+  const watchlist = profileData?.watchlist || ['1', '2'];
 
   const watchlistTokens = useMemo(() => {
     return TOP_30_TOKENS.filter(t => watchlist.includes(t.id))
@@ -58,7 +59,14 @@ export default function WatchlistPage() {
   }
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground italic">Loading your watchlist...</div>
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-2">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
+          <p className="text-muted-foreground italic">Loading your watchlist...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -115,7 +123,7 @@ export default function WatchlistPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            {token.symbol}
+                            {token.symbol[0]}
                           </div>
                           <div>
                             <p className="text-sm font-bold">{token.name}</p>
