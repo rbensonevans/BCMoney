@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -45,7 +44,7 @@ export default function MyTokensPage() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead>Asset</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead>Balance</TableHead>
                   <TableHead></TableHead>
                   <TableHead></TableHead>
                   <TableHead></TableHead>
