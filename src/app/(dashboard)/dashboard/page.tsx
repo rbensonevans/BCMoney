@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -176,12 +175,19 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="black"/>
-          <circle cx="16" cy="10" r="3" fill="white"/>
-          <circle cx="21" cy="13" r="3" fill="white"/>
-          <circle cx="20" cy="19" r="3" fill="white"/>
-          <circle cx="12" cy="19" r="3" fill="white"/>
-          <circle cx="11" cy="13" r="3" fill="white"/>
+          <circle cx="16" cy="16" r="16" fill="#E6007A"/>
+          <path d="M16 8C11.5817 8 8 11.5817 8 16C8 20.4183 11.5817 24 16 24C20.4183 24 24 20.4183 24 16C24 11.5817 20.4183 8 16 8Z" fill="white"/>
+          <circle cx="16" cy="16" r="2.5" fill="#E6007A"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'LINK') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#2A5ADA"/>
+          <path d="M16 6.5L25.5 11.5V20.5L16 25.5L6.5 20.5V11.5L16 6.5ZM16 11.5L11.5 14V18L16 20.5L20.5 18V14L16 11.5Z" fill="white" fillRule="evenodd"/>
         </svg>
       </div>
     )
