@@ -111,6 +111,28 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'ADA') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#0033AD"/>
+          <circle cx="16" cy="16" r="2" fill="white"/>
+          <circle cx="16" cy="11" r="1.5" fill="white"/>
+          <circle cx="16" cy="21" r="1.5" fill="white"/>
+          <circle cx="11" cy="16" r="1.5" fill="white"/>
+          <circle cx="21" cy="16" r="1.5" fill="white"/>
+          <circle cx="12.5" cy="12.5" r="1.2" fill="white"/>
+          <circle cx="19.5" cy="12.5" r="1.2" fill="white"/>
+          <circle cx="12.5" cy="19.5" r="1.2" fill="white"/>
+          <circle cx="19.5" cy="19.5" r="1.2" fill="white"/>
+          <circle cx="16" cy="7" r="0.8" fill="white"/>
+          <circle cx="16" cy="25" r="0.8" fill="white"/>
+          <circle cx="7" cy="16" r="0.8" fill="white"/>
+          <circle cx="25" cy="16" r="0.8" fill="white"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 

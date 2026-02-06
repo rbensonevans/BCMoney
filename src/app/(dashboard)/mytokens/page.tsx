@@ -13,7 +13,7 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Award, ArrowDownLeft, ArrowUpRight, Send, Repeat, History, Loader2, ArrowLeft } from "lucide-react"
+import { Award, ArrowDownLeft, ArrowUpRight, Send, Repeat, History, Loader2 } from "lucide-react"
 import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { TOP_30_TOKENS } from "@/lib/market-data"
@@ -50,7 +50,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
           <circle cx="16" cy="16" r="16" fill="#26A17B"/>
-          <path d="M17.922 17.383v-.002c-.017.001-.034.001-.051.002-1.004.041-2.738.041-3.744 0-.017-.001-.034-.001-.051-.002v.002c-2.454-.114-4.29-.49-4.29-.933 0-.444 1.836-.82 4.29-.933v.002c.017-.001.034-.001.051-.002 1.006-.041 2.74-.041 3.744 0 .017.001.034.001.051.002v-.002c2.454.113 4.29.49 4.29.933 0 .444-1.836.82-4.29.933zm0-2.316V12.18h3.911V9.13H10.165v3.05h3.912v2.887c-2.883.157-5.016.666-5.016 1.282 0 .616 2.133 1.125 5.016 1.282v4.237h3.845v-4.237c2.883-.157 5.016-.666 5.016-1.282 0-.616-2.133-1.125-5.016-1.282z" fill="#FFF"/>
+          <path d="M17.922 17.383v-.002c-.017.001-.034.001-.051.002-1.004.041-2.738.041-3.744 0-.017-.001-.034-.001-.051-.002v.002c-2.454-.114-4.29-.49-4.29-.933 0-.444 1.836-.82 4.29-.933v.002c.017-.001.034-.001.051-.002 1.006-.041 2.74-.041 3.744 0 .017.001.034.001.051.002v-.002c2.454.113 4.29.49 4.29.933 0 .444-1.836.82-4.29.933zm0-2.316V12.18h3.911V9.13H10.165v3.05h3.912v2.887c-2.883.157-5.016.666-5.016 1.282 0 .616 2.133 1.125 5.016 1.282v4.237h3.845v-4.237c2.883-.157 5.016-.666 5.016-1.282 0-.616 2.133-1.125-5.016-1.282z" fill="#FFF"/>
         </svg>
       </div>
     )
@@ -99,6 +99,28 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="16" fill="#23292F"/>
           <path d="M16 14.885L10.231 9.115H6.5L13.885 16.5L6.5 23.885H10.231L16 18.115L21.769 23.885H25.5L18.115 16.5L25.5 9.115H21.769L16 14.885Z" fill="white"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'ADA') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#0033AD"/>
+          <circle cx="16" cy="16" r="2" fill="white"/>
+          <circle cx="16" cy="11" r="1.5" fill="white"/>
+          <circle cx="16" cy="21" r="1.5" fill="white"/>
+          <circle cx="11" cy="16" r="1.5" fill="white"/>
+          <circle cx="21" cy="16" r="1.5" fill="white"/>
+          <circle cx="12.5" cy="12.5" r="1.2" fill="white"/>
+          <circle cx="19.5" cy="12.5" r="1.2" fill="white"/>
+          <circle cx="12.5" cy="19.5" r="1.2" fill="white"/>
+          <circle cx="19.5" cy="19.5" r="1.2" fill="white"/>
+          <circle cx="16" cy="7" r="0.8" fill="white"/>
+          <circle cx="16" cy="25" r="0.8" fill="white"/>
+          <circle cx="7" cy="16" r="0.8" fill="white"/>
+          <circle cx="25" cy="16" r="0.8" fill="white"/>
         </svg>
       </div>
     )
