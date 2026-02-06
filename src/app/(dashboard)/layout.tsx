@@ -77,7 +77,7 @@ export default function DashboardLayout({
           <SidebarTrigger />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex-1 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-muted-foreground">Secure Banking</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">BCMoney - secure wallet</h2>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground hidden md:inline-block">{user.email}</span>
