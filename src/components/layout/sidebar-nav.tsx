@@ -36,7 +36,7 @@ export function SidebarNav() {
         <div className="bg-primary h-8 w-8 rounded-lg flex items-center justify-center text-primary-foreground">
           <Wallet className="h-5 w-5" />
         </div>
-        <span className="font-bold text-xl group-data-[collapsible=icon]:hidden">BCMoney</span>
+        <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">BCMoney</span>
       </SidebarHeader>
       <SidebarContent className="px-2">
         <SidebarMenu>
