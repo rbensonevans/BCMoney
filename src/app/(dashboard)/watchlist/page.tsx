@@ -155,6 +155,17 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'TRX') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#FF0013"/>
+          <path d="M24 12L16 5L8 12L16 27L24 12ZM16 8L21 12.5L16 22L11 12.5L16 8Z" fill="white"/>
+          <path d="M16 8L11 12.5L16 22V8Z" fill="white" fillOpacity="0.3"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
