@@ -12,6 +12,24 @@
       "description": "Financial security illustration",
       "imageUrl": "https://picsum.photos/seed/bank/1200/800",
       "imageHint": "finance security"
+    },
+    {
+      "id": "crypto-btc",
+      "description": "Bitcoin Icon",
+      "imageUrl": "https://picsum.photos/seed/btc/64/64",
+      "imageHint": "bitcoin logo"
+    },
+    {
+      "id": "crypto-eth",
+      "description": "Ethereum Icon",
+      "imageUrl": "https://picsum.photos/seed/eth/64/64",
+      "imageHint": "ethereum logo"
+    },
+    {
+      "id": "crypto-generic",
+      "description": "Generic Crypto Icon",
+      "imageUrl": "https://picsum.photos/seed/crypto/64/64",
+      "imageHint": "crypto token"
     }
   ]
 }

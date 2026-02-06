@@ -1,7 +1,9 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   Search, 
@@ -132,8 +134,14 @@ export default function DashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="bg-primary/10 p-2 rounded-lg text-primary font-bold">
-                          {token.symbol[0]}
+                        <div className="h-10 w-10 rounded-full overflow-hidden bg-muted relative">
+                          <Image 
+                            src={`https://picsum.photos/seed/${token.id}/40/40`} 
+                            alt={token.symbol}
+                            fill
+                            className="object-cover"
+                            data-ai-hint="crypto icon"
+                          />
                         </div>
                         <div>
                           <p className="font-bold">{token.name}</p>
@@ -234,8 +242,14 @@ export default function DashboardPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary text-[10px] font-bold">
-                              {token.symbol}
+                            <div className="h-8 w-8 rounded-full overflow-hidden bg-muted relative">
+                              <Image 
+                                src={`https://picsum.photos/seed/${token.id}/32/32`} 
+                                alt={token.symbol}
+                                fill
+                                className="object-cover"
+                                data-ai-hint="crypto token"
+                              />
                             </div>
                             <div>
                               <p className="text-sm font-bold">{token.name}</p>

@@ -3,6 +3,7 @@
 
 import { useMemo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { 
   Table, 
@@ -31,11 +32,8 @@ export default function MyTokensPage() {
   
   const ownedTokensList = useMemo(() => {
     const ownedIds = profileData?.ownedTokens || [];
-    // If empty, we might want to show some defaults for prototype, but let's stick to owned
     return TOP_30_TOKENS.filter(t => ownedIds.includes(t.id)).map(t => ({
       ...t,
-      // For the prototype, we assign a random "demo" balance if it's newly added
-      // In a real app, this would be fetched from the 'Account' subcollection or calculated from txns
       balance: ownedIds.indexOf(t.id) % 2 === 0 ? 0.5 : 1250.0 
     }));
   }, [profileData]);
@@ -91,8 +89,14 @@ export default function MyTokensPage() {
                     <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary text-[10px] font-bold">
-                            {token.symbol}
+                          <div className="h-8 w-8 rounded-full overflow-hidden bg-muted relative">
+                            <Image 
+                              src={`https://picsum.photos/seed/${token.id}/32/32`} 
+                              alt={token.symbol}
+                              fill
+                              className="object-cover"
+                              data-ai-hint="crypto token"
+                            />
                           </div>
                           <div>
                             <p className="text-sm font-bold">{token.name}</p>
