@@ -170,13 +170,10 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#E6007A"/>
-          <circle cx="16" cy="8" r="3" fill="white"/>
-          <circle cx="10" cy="13" r="3" fill="white"/>
-          <circle cx="22" cy="13" r="3" fill="white"/>
-          <circle cx="10" cy="21" r="3" fill="white"/>
-          <circle cx="22" cy="21" r="3" fill="white"/>
-          <circle cx="16" cy="26" r="3" fill="white"/>
+          <circle cx="16" cy="16" r="16" fill="black"/>
+          <ellipse cx="11" cy="16" rx="2.5" ry="5" fill="white"/>
+          <ellipse cx="16" cy="16" rx="2.5" ry="5" fill="white"/>
+          <ellipse cx="21" cy="16" rx="2.5" ry="5" fill="white"/>
         </svg>
       </div>
     )
@@ -186,7 +183,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="16" fill="#2A5ADA"/>
-          <path d="M16 6.5L25.5 11.5V20.5L16 25.5L6.5 20.5V11.5L16 6.5ZM16 11.5L11.5 14V18L16 20.5L20.5 18V14L16 11.5Z" fill="white" fillRule="evenodd"/>
+          <path d="M16 8L24 12.5V20L16 24.5L8 20V12.5L16 8ZM16 11L12 13.5V18.5L16 21L20 18.5V13.5L16 11Z" fill="white"/>
         </svg>
       </div>
     )
@@ -196,7 +193,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="16" fill="#8247E5"/>
-          <path d="M23.3 11.2L19.4 8.9C19 8.7 18.4 8.7 18 8.9L14.1 11.2C13.7 11.4 13.5 11.8 13.5 12.3V16.8L12.5 17.4L8.7 15.2C8.3 15 7.7 15 7.3 15.2L3.4 17.5C3 17.7 2.8 18.1 2.8 18.6V23.1C2.8 23.6 3 24 3.4 24.2L7.3 26.5C7.7 26.7 8.3 26.7 8.7 26.5L12.6 24.2C13 24 13.2 23.6 13.2 23.1V18.6L14.2 18L18 20.2C18.4 20.4 19 20.4 19.4 20.2L23.3 17.9C23.7 17.7 23.9 17.3 23.9 16.8V12.3C23.9 11.8 23.7 11.4 23.3 11.2ZM11.6 22.2L8 24.3L4.4 22.2V18.9L8 16.8L11.6 18.9V22.2ZM22.3 16L18.7 18.1L15.1 16V12.7L18.7 10.6L22.3 12.7V16Z" fill="white"/>
+          <path d="M16 8L23 12V20L16 24L9 20V12L16 8ZM16 11.5L12.5 13.5V18.5L16 20.5L19.5 18.5V13.5L16 11.5Z" fill="white"/>
         </svg>
       </div>
     )
@@ -227,33 +224,12 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
-  if (token.symbol === 'BCH') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
-          <circle cx="16" cy="16" r="16" fill="#8DC351"/>
-          <path d="M23.2 14.1c.3-1.9-.1-3.3-3-4.1l.6-2.5-1.5-.4-.6 2.4c-.4-.1-.8-.2-1.2-.3l.6-2.4-1.5-.4-.6 2.4c-.3-.1-.6-.1-1-.2l0 0-2.1-.5-.4 1.6s1.1.3 1.1.3c.6.2.7.6.7.9l-.7 2.8c0 0 .1 0 .2 0l-.2 0-1.1 4.5c-.1.2-.3.5-.7.4 0 0-1.1-.3-1.1-.3l-.7 1.7 2 .5c.4.1.7.2 1.1.3l-.6 2.5 1.5.4.6-2.4c.4.1.8.2 1.2.3l-.6 2.4 1.5.4.6-2.5c2.6.5 4.5.3 5.3-2 .7-1.9 0-2.9-1.4-3.6 1-.2 1.7-.9 1.9-2.2zm-3.4 4.8c-.5 1.9-3.6.9-4.6.6l.8-3.3c1 .3 4.3.8 3.8 2.7zm.5-4.8c-.4 1.7-3 .8-3.9.6l.7-3.1c.9.2 3.6.6 3.2 2.4z" fill="white" transform="rotate(-15, 16, 16)"/>
-        </svg>
-      </div>
-    )
-  }
   if (token.symbol === 'NEAR') {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="black"/>
-          <path d="M24.5 22.5L16 11.5L7.5 22.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'UNI') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#FF007A"/>
-          <path d="M16 8C12 8 9 11 9 15C9 19 12 22 16 22C20 22 23 19 23 15C23 11 20 8 16 8Z" stroke="white" strokeWidth="2"/>
-          <path d="M16 12V18M13 15H19" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          <circle cx="16" cy="16" r="16" fill="#00FFA3"/>
+          <path d="M21.5 10H17.5L10.5 20.5V10H7V22H11L18 11.5V22H21.5V10Z" fill="black"/>
         </svg>
       </div>
     )
