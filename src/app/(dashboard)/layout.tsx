@@ -78,7 +78,7 @@ export default function DashboardLayout({
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex-1 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-muted-foreground flex items-baseline gap-1">
-              <span className="text-xl font-bold text-primary">BCMoney</span>
+              <span className="text-2xl font-bold text-primary">BCMoney</span>
               <span>- secure wallet</span>
             </h2>
             <div className="flex items-center gap-4">
