@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -83,6 +82,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#000"/>
           <path d="M25.86 20.76L23.23 23.41H4.37L7 20.76H25.86ZM25.86 11.23L23.23 13.88H4.37L7 11.23H25.86ZM8.77 4.1H27.63L25 6.75H6.14L8.77 4.1Z" fill="url(#sol_grad)"/>
           <defs>
             <linearGradient id="sol_grad" x1="27.63" y1="4.1" x2="4.37" y2="23.41" gradientUnits="userSpaceOnUse">
