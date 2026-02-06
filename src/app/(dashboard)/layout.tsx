@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { useUser, useAuth } from "@/firebase/provider"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { Loader2, UserCircle, LogOut } from "lucide-react"
+import { Loader2, UserCircle, LogOut, Info } from "lucide-react"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -105,6 +105,12 @@ export default function DashboardLayout({
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/info" className="flex items-center w-full cursor-pointer">
+                        <Info className="mr-2 h-4 w-4" />
+                        <span>Info</span>
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="flex items-center w-full cursor-pointer">
                         <UserCircle className="mr-2 h-4 w-4" />
