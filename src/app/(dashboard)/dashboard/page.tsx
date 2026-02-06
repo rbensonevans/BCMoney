@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast"
 import { TOP_30_TOKENS } from "@/lib/market-data"
 import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
-import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -36,14 +36,13 @@ export default function DashboardPage() {
   const { user } = useUser()
   const { firestore } = useFirebase()
 
-  // Firestore Watchlist Persistence - Pointing to the root user document
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
   const { data: profileData } = useDoc(profileRef);
-  const watchlist = profileData?.watchlist || ['1', '2']; // Default: BTC, ETH
+  const watchlist = profileData?.watchlist || ['1', '2']; 
 
   const filteredTokens = useMemo(() => {
     return TOP_30_TOKENS.filter(token => 
@@ -53,14 +52,18 @@ export default function DashboardPage() {
   }, [searchQuery])
 
   const toggleWatchlist = (tokenId: string, tokenName: string) => {
-    if (!profileRef) return;
+    if (!profileRef || !user) return;
 
     const isAlreadyAdded = watchlist.includes(tokenId)
     const newWatchlist = isAlreadyAdded 
       ? watchlist.filter((id: string) => id !== tokenId)
       : [...watchlist, tokenId];
 
-    updateDocumentNonBlocking(profileRef, { watchlist: newWatchlist });
+    setDocumentNonBlocking(profileRef, { 
+      watchlist: newWatchlist,
+      id: user.uid,
+      email: user.email || ""
+    }, { merge: true });
 
     toast({
       title: isAlreadyAdded ? "Removed from Watchlist" : "Added to Watchlist",

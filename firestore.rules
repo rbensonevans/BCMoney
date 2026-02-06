@@ -13,54 +13,26 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
     // --- Collection Rules ---
 
     /**
-     * @description Rules for UserProfile documents.
-     * @path /users/{userId}
+     * @description Rules for UserProfile documents and subcollections.
+     * All user data is nested under /users/{userId}, so we enforce ownership at the top level.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
+      allow read, write: if isOwner(userId);
 
-    /**
-     * @description Rules for Account documents.
-     * @path /users/{userId}/accounts/{accountId}
-     */
-    match /users/{userId}/accounts/{accountId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
-    }
+      match /accounts/{accountId} {
+        allow read, write: if isOwner(userId);
 
-    /**
-     * @description Rules for Transaction documents.
-     * @path /users/{userId}/accounts/{accountId}/transactions/{transactionId}
-     */
-    match /users/{userId}/accounts/{accountId}/transactions/{transactionId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.accountId == accountId;
-      allow update: if isExistingOwner(userId) && request.resource.data.accountId == resource.data.accountId;
-      allow delete: if isExistingOwner(userId);
-    }
+        match /transactions/{transactionId} {
+          allow read, write: if isOwner(userId);
+        }
+      }
 
-    /**
-     * @description Rules for Recipient documents.
-     * @path /users/{userId}/recipients/{recipientId}
-     */
-    match /users/{userId}/recipients/{recipientId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      match /recipients/{recipientId} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }

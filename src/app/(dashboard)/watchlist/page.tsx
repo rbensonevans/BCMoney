@@ -8,7 +8,6 @@ import {
   Star, 
   TrendingUp, 
   TrendingDown, 
-  LayoutDashboard,
   ArrowLeft
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -25,21 +24,19 @@ import { useToast } from "@/hooks/use-toast"
 import { TOP_30_TOKENS } from "@/lib/market-data"
 import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
-import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function WatchlistPage() {
   const { toast } = useToast()
   const { user } = useUser()
   const { firestore } = useFirebase()
 
-  // Firestore Watchlist Persistence - Pointing to the root user document
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
   const { data: profileData, isLoading } = useDoc(profileRef);
-  // Default to BTC and ETH if watchlist is not yet set in profile
   const watchlist = profileData?.watchlist || ['1', '2'];
 
   const watchlistTokens = useMemo(() => {
@@ -47,10 +44,13 @@ export default function WatchlistPage() {
   }, [watchlist])
 
   const toggleWatchlist = (tokenId: string, tokenName: string) => {
-    if (!profileRef) return;
+    if (!profileRef || !user) return;
 
     const newWatchlist = watchlist.filter((id: string) => id !== tokenId);
-    updateDocumentNonBlocking(profileRef, { watchlist: newWatchlist });
+    setDocumentNonBlocking(profileRef, { 
+      watchlist: newWatchlist,
+      id: user.uid 
+    }, { merge: true });
 
     toast({
       title: "Removed from Watchlist",
