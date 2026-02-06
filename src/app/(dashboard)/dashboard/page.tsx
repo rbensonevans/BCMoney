@@ -175,9 +175,13 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#E6007A"/>
-          <circle cx="16" cy="16" r="8" fill="white" />
-          <circle cx="16" cy="16" r="5" fill="#E6007A" />
+          <circle cx="16" cy="16" r="16" fill="#000"/>
+          <ellipse cx="16" cy="8" rx="3" ry="4" fill="white" />
+          <ellipse cx="10" cy="13" rx="3" ry="4" fill="white" transform="rotate(-45 10 13)" />
+          <ellipse cx="22" cy="13" rx="3" ry="4" fill="white" transform="rotate(45 22 13)" />
+          <ellipse cx="10" cy="21" rx="3" ry="4" fill="white" transform="rotate(45 10 21)" />
+          <ellipse cx="22" cy="21" rx="3" ry="4" fill="white" transform="rotate(-45 22 21)" />
+          <ellipse cx="16" cy="26" rx="3" ry="4" fill="white" />
         </svg>
       </div>
     )
@@ -198,6 +202,22 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="16" fill="#8247E5"/>
           <path d="M23.3 11.2L19.4 8.9C19 8.7 18.4 8.7 18 8.9L14.1 11.2C13.7 11.4 13.5 11.8 13.5 12.3V16.8L12.5 17.4L8.7 15.2C8.3 15 7.7 15 7.3 15.2L3.4 17.5C3 17.7 2.8 18.1 2.8 18.6V23.1C2.8 23.6 3 24 3.4 24.2L7.3 26.5C7.7 26.7 8.3 26.7 8.7 26.5L12.6 24.2C13 24 13.2 23.6 13.2 23.1V18.6L14.2 18L18 20.2C18.4 20.4 19 20.4 19.4 20.2L23.3 17.9C23.7 17.7 23.9 17.3 23.9 16.8V12.3C23.9 11.8 23.7 11.4 23.3 11.2ZM11.6 22.2L8 24.3L4.4 22.2V18.9L8 16.8L11.6 18.9V22.2ZM22.3 16L18.7 18.1L15.1 16V12.7L18.7 10.6L22.3 12.7V16Z" fill="white"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'SHIB') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#FFA409"/>
+          <circle cx="16" cy="16" r="15" stroke="#E32E1D" strokeWidth="2"/>
+          <path d="M16 8C13 8 10 9.5 8.5 12L7 16C7 16 7.5 24 16 24C24.5 24 25 16 25 16L23.5 12C22 9.5 19 8 16 8Z" fill="#FFA409"/>
+          <path d="M16 24C11 24 8.5 20 8.5 18C8.5 18 9 22 16 22C23 22 23.5 18 23.5 18C23.5 20 21 24 16 24Z" fill="white"/>
+          <path d="M12 14C12.5523 14 13 13.5523 13 13C13 12.4477 12.5523 12 12 12C11.4477 12 11 12.4477 11 13C11 13.5523 11.4477 14 12 14Z" fill="black"/>
+          <path d="M20 14C20.5523 14 21 13.5523 21 13C21 12.4477 20.5523 12 20 12C19.4477 12 19 12.4477 19 13C19 13.5523 19.4477 14 20 14Z" fill="black"/>
+          <path d="M16 19C16.5523 19 17 18.5523 17 18C17 17.4477 16.5523 17 16 17C15.4477 17 15 17.4477 15 18C15 18.5523 15.4477 19 16 19Z" fill="black"/>
+          <path d="M14 20C14 20 15 21 16 21C17 21 18 20 18 20" stroke="black" strokeWidth="0.5" strokeLinecap="round"/>
         </svg>
       </div>
     )
