@@ -175,13 +175,13 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#000"/>
-          <ellipse cx="16" cy="8" rx="3" ry="4" fill="white" />
-          <ellipse cx="10" cy="13" rx="3" ry="4" fill="white" transform="rotate(-45 10 13)" />
-          <ellipse cx="22" cy="13" rx="3" ry="4" fill="white" transform="rotate(45 22 13)" />
-          <ellipse cx="10" cy="21" rx="3" ry="4" fill="white" transform="rotate(45 10 21)" />
-          <ellipse cx="22" cy="21" rx="3" ry="4" fill="white" transform="rotate(-45 22 21)" />
-          <ellipse cx="16" cy="26" rx="3" ry="4" fill="white" />
+          <circle cx="16" cy="16" r="16" fill="#E6007A"/>
+          <circle cx="16" cy="8" r="3" fill="white"/>
+          <circle cx="10" cy="13" r="3" fill="white"/>
+          <circle cx="22" cy="13" r="3" fill="white"/>
+          <circle cx="10" cy="21" r="3" fill="white"/>
+          <circle cx="22" cy="21" r="3" fill="white"/>
+          <circle cx="16" cy="26" r="3" fill="white"/>
         </svg>
       </div>
     )
@@ -218,6 +218,47 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
           <path d="M20 14C20.5523 14 21 13.5523 21 13C21 12.4477 20.5523 12 20 12C19.4477 12 19 12.4477 19 13C19 13.5523 19.4477 14 20 14Z" fill="black"/>
           <path d="M16 19C16.5523 19 17 18.5523 17 18C17 17.4477 16.5523 17 16 17C15.4477 17 15 17.4477 15 18C15 18.5523 15.4477 19 16 19Z" fill="black"/>
           <path d="M14 20C14 20 15 21 16 21C17 21 18 20 18 20" stroke="black" strokeWidth="0.5" strokeLinecap="round"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'LTC') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+          <circle cx="16" cy="16" r="16" fill="#345D9D"/>
+          <path d="M21 21h-6.2l1.1-4.1H18L19.1 13h-2.1l1.1-4.1H13.9L10 23.3h11V21z" fill="white" />
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'BCH') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+          <circle cx="16" cy="16" r="16" fill="#8DC351"/>
+          <path d="M23.2 14.1c.3-1.9-.1-3.3-3-4.1l.6-2.5-1.5-.4-.6 2.4c-.4-.1-.8-.2-1.2-.3l.6-2.4-1.5-.4-.6 2.4c-.3-.1-.6-.1-1-.2l0 0-2.1-.5-.4 1.6s1.1.3 1.1.3c.6.2.7.6.7.9l-.7 2.8c0 0 .1 0 .2 0l-.2 0-1.1 4.5c-.1.2-.3.5-.7.4 0 0-1.1-.3-1.1-.3l-.7 1.7 2 .5c.4.1.7.2 1.1.3l-.6 2.5 1.5.4.6-2.4c.4.1.8.2 1.2.3l-.6 2.4 1.5.4.6-2.5c2.6.5 4.5.3 5.3-2 .7-1.9 0-2.9-1.4-3.6 1-.2 1.7-.9 1.9-2.2zm-3.4 4.8c-.5 1.9-3.6.9-4.6.6l.8-3.3c1 .3 4.3.8 3.8 2.7zm.5-4.8c-.4 1.7-3 .8-3.9.6l.7-3.1c.9.2 3.6.6 3.2 2.4z" fill="white" transform="rotate(-15, 16, 16)"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'NEAR') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="black"/>
+          <path d="M24.5 22.5L16 11.5L7.5 22.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'UNI') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#FF007A"/>
+          <path d="M16 8C12 8 9 11 9 15C9 19 12 22 16 22C20 22 23 19 23 15C23 11 20 8 16 8Z" stroke="white" strokeWidth="2"/>
+          <path d="M16 12V18M13 15H19" stroke="white" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       </div>
     )
