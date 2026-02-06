@@ -95,6 +95,16 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'XRP') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#23292F"/>
+          <path d="M16 14.885L10.231 9.115H6.5L13.885 16.5L6.5 23.885H10.231L16 18.115L21.769 23.885H25.5L18.115 16.5L25.5 9.115H21.769L16 14.885Z" fill="white"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
