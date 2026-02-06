@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -72,7 +71,8 @@ export default function DashboardPage() {
   }
 
   const watchlistTokens = useMemo(() => {
-    return TOP_30_TOKENS.filter(t => watchlist.includes(t.id))
+    // Return only the first 4 tokens from the watchlist
+    return TOP_30_TOKENS.filter(t => watchlist.includes(t.id)).slice(0, 4)
   }, [watchlist])
 
   return (
@@ -108,7 +108,7 @@ export default function DashboardPage() {
             </Button>
           </div>
           {watchlistTokens.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {watchlistTokens.map(token => (
                 <Card key={token.id} className="shadow-sm border-l-4 border-l-secondary overflow-hidden">
                   <CardContent className="p-6">
