@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -10,7 +11,8 @@ import {
   TrendingUp, 
   TrendingDown,
   Coins,
-  ArrowRight
+  ArrowRight,
+  CheckCircle2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,6 +44,7 @@ export default function DashboardPage() {
 
   const { data: profileData } = useDoc(profileRef);
   const watchlist = profileData?.watchlist || ['1', '2']; 
+  const ownedTokens = profileData?.ownedTokens || [];
 
   const filteredTokens = useMemo(() => {
     return TOP_30_TOKENS.filter(token => 
@@ -70,8 +73,24 @@ export default function DashboardPage() {
     })
   }
 
+  const addToMyTokens = (tokenId: string, tokenName: string) => {
+    if (!profileRef || !user || ownedTokens.includes(tokenId)) return;
+
+    const newOwnedTokens = [...ownedTokens, tokenId];
+
+    setDocumentNonBlocking(profileRef, { 
+      ownedTokens: newOwnedTokens,
+      id: user.uid,
+      email: user.email || ""
+    }, { merge: true });
+
+    toast({
+      title: "Token Added",
+      description: `${tokenName} has been added to your MyTokens list.`
+    })
+  }
+
   const watchlistTokens = useMemo(() => {
-    // Return only the first 4 tokens from the watchlist
     return TOP_30_TOKENS.filter(t => watchlist.includes(t.id)).slice(0, 4)
   }, [watchlist])
 
@@ -172,7 +191,11 @@ export default function DashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-[50px]">#</TableHead>
+                  <TableHead className="w-[100px]">
+                    <div className="text-[10px] leading-tight uppercase font-bold text-center">
+                      Add to<br/>MyTokens
+                    </div>
+                  </TableHead>
                   <TableHead>Asset</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">24h Change</TableHead>
@@ -188,51 +211,65 @@ export default function DashboardPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTokens.map((token, index) => (
-                    <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {index + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary text-[10px] font-bold">
-                            {token.symbol}
+                  filteredTokens.map((token) => {
+                    const isOwned = ownedTokens.includes(token.id);
+                    return (
+                      <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="text-center">
+                          <button
+                            disabled={isOwned}
+                            onClick={() => addToMyTokens(token.id, token.name)}
+                            className={cn(
+                              "h-6 w-6 rounded-full transition-all flex items-center justify-center mx-auto",
+                              isOwned 
+                                ? "bg-red-500 cursor-not-allowed opacity-80" 
+                                : "bg-green-500 hover:scale-110 active:scale-95 shadow-sm"
+                            )}
+                          >
+                            {isOwned && <CheckCircle2 className="h-4 w-4 text-white" />}
+                          </button>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary text-[10px] font-bold">
+                              {token.symbol}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">{token.name}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{token.symbol}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold">{token.name}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">{token.symbol}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-medium">
-                        ${token.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className={cn(
-                          "text-xs font-bold inline-flex items-center",
-                          token.change >= 0 ? "text-green-600" : "text-red-600"
-                        )}>
-                          {token.change >= 0 ? "+" : ""}{token.change}%
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right hidden md:table-cell text-muted-foreground text-xs">
-                        {token.marketCap}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={cn(
-                            "h-8 w-8 transition-colors",
-                            watchlist.includes(token.id) ? "text-yellow-500 hover:text-yellow-600" : "text-muted-foreground hover:text-primary"
-                          )}
-                          onClick={() => toggleWatchlist(token.id, token.name)}
-                        >
-                          <Star className={cn("h-4 w-4", watchlist.includes(token.id) && "fill-current")} />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-medium">
+                          ${token.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={cn(
+                            "text-xs font-bold inline-flex items-center",
+                            token.change >= 0 ? "text-green-600" : "text-red-600"
+                          )}>
+                            {token.change >= 0 ? "+" : ""}{token.change}%
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right hidden md:table-cell text-muted-foreground text-xs">
+                          {token.marketCap}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className={cn(
+                              "h-8 w-8 transition-colors",
+                              watchlist.includes(token.id) ? "text-yellow-500 hover:text-yellow-600" : "text-muted-foreground hover:text-primary"
+                            )}
+                            onClick={() => toggleWatchlist(token.id, token.name)}
+                          >
+                            <Star className={cn("h-4 w-4", watchlist.includes(token.id) && "fill-current")} />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
                 )}
               </TableBody>
             </Table>
