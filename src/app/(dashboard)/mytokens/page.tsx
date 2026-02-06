@@ -135,6 +135,18 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'DOGE') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#BA9F33"/>
+          <circle cx="16" cy="16" r="13" fill="#E1B305"/>
+          <path d="M12 11V21H16.5C18.433 21 20 19.433 20 17.5V14.5C20 12.567 18.433 11 16.5 11H12ZM14.5 18.5V13.5H16.5C17.6046 13.5 18.5 14.3954 18.5 15.5V16.5C18.5 17.6046 17.6046 18.5 16.5 18.5H14.5Z" fill="white"/>
+          <rect x="11" y="15.5" width="4" height="1" fill="white"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
