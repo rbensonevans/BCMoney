@@ -26,7 +26,7 @@ import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
-// Helper component for token icons (Consistent with Dashboard and MyTokens)
+// Helper component for token icons
 function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
   if (token.symbol === 'BTC') {
     return (
@@ -59,6 +59,16 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
           <circle cx="16" cy="16" r="16" fill="#26A17B"/>
           <path d="M17.922 17.383v-.002c-.017.001-.034.001-.051.002-1.004.041-2.738.041-3.744 0-.017-.001-.034-.001-.051-.002v.002c-2.454-.114-4.29-.49-4.29-.933 0-.444 1.836-.82 4.29-.933v.002c.017-.001.034-.001.051-.002 1.006-.041 2.74-.041 3.744 0 .017.001.034.001.051.002v-.002c2.454.113 4.29.49 4.29.933 0 .444-1.836.82-4.29.933zm0-2.316V12.18h3.911V9.13H10.165v3.05h3.912v2.887c-2.883.157-5.016.666-5.016 1.282 0 .616 2.133 1.125 5.016 1.282v4.237h3.845v-4.237c2.883-.157 5.016-.666 5.016-1.282 0-.616-2.133-1.125-5.016-1.282z" fill="#FFF"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'BNB') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+          <circle cx="16" cy="16" r="16" fill="#F3BA2F"/>
+          <path d="M16 12.35l-2.43 2.43 2.43 2.43 2.43-2.43L16 12.35zM12.7 9.05l-2.43 2.43L12.7 13.9l2.43-2.42-2.43-2.43zM19.3 9.05l-2.43 2.43 2.43 2.42 2.43-2.43-2.43-2.43zM16 5.75l-2.43 2.43 2.43 2.43 2.43-2.43L16 5.75zM16 18.95l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43zM12.7 15.65l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43zM19.3 15.65l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43zM16 22.25l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43" fill="#FFF"/>
         </svg>
       </div>
     )

@@ -68,6 +68,16 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'BNB') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+          <circle cx="16" cy="16" r="16" fill="#F3BA2F"/>
+          <path d="M16 12.35l-2.43 2.43 2.43 2.43 2.43-2.43L16 12.35zM12.7 9.05l-2.43 2.43L12.7 13.9l2.43-2.42-2.43-2.43zM19.3 9.05l-2.43 2.43 2.43 2.42 2.43-2.43-2.43-2.43zM16 5.75l-2.43 2.43 2.43 2.43 2.43-2.43L16 5.75zM16 18.95l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43zM12.7 15.65l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43zM19.3 15.65l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43zM16 22.25l-2.43 2.43 2.43 2.43 2.43-2.43-2.43-2.43z" fill="#FFF"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
