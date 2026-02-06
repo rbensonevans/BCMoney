@@ -138,6 +138,16 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'AVAX') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 32 32">
+          <circle cx="16" cy="16" r="16" fill="#E84142"/>
+          <path fill="#FFF" d="m17.51 14.54-1.51-2.61-1.51 2.61h3.02zM12.63 23h2.38l-1.19-2.07L12.63 23zm4.37-2.07-1.19 2.07h2.38l-1.19-2.07zM16 10l-8 13.86h16L16 10zm4.24 11h-8.48L16 13.66 20.24 21z"/>
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
