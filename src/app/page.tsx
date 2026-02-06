@@ -89,7 +89,7 @@ export default function LandingPage() {
             BCMoney
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-lg mx-auto leading-tight">
-            Move Blockchain Money <span className="text-secondary font-bold">P2P & Feeless</span>.
+            Move Blockchain Money <span className="block text-secondary font-bold">P2P &amp; Feeless</span>
           </p>
         </div>
         
