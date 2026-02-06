@@ -36,14 +36,14 @@ export default function DashboardPage() {
   const { user } = useUser()
   const { firestore } = useFirebase()
 
-  // Firestore Watchlist Persistence
+  // Firestore Watchlist Persistence - Pointing to the root user document
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return doc(firestore, 'users', user.uid, 'profile');
+    return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
   const { data: profileData } = useDoc(profileRef);
-  const watchlist = profileData?.watchlist || ['1', '2']; // Default: BTC, ETH (Solana removed)
+  const watchlist = profileData?.watchlist || ['1', '2']; // Default: BTC, ETH
 
   const filteredTokens = useMemo(() => {
     return TOP_30_TOKENS.filter(token => 
@@ -152,7 +152,7 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{searchQuery ? "Search Results" : "Top 30 Market Overview"}</CardTitle>
+              <CardTitle>Top 30 Market Overview</CardTitle>
               <CardDescription>
                 {searchQuery ? `Found ${filteredTokens.length} tokens` : "Current rankings by market capitalization"}
               </CardDescription>

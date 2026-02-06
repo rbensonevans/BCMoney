@@ -1,32 +1,3 @@
-/**
- * BCMoney Security Rules
- * 
- * Core Philosophy:
- * This ruleset implements a strict Ownership model. All data within the application is 
- * logically and physically nested under a unique user identifier ({userId}). Access 
- * is granted exclusively to the authenticated user whose UID matches the path parameter.
- * 
- * Data Structure:
- * The data is organized hierarchically:
- * - /users/{userId}/profile: User-specific metadata.
- * - /users/{userId}/accounts/{accountId}: Financial accounts owned by the user.
- * - /users/{userId}/accounts/{accountId}/transactions/{transactionId}: Transaction history per account.
- * - /users/{userId}/recipients/{recipientId}: Personal recipient lists for transfers.
- * 
- * Key Security Decisions:
- * 1. Path-Based Authorization: By nesting all documents under the userId, we achieve 
- *    "Authorization Independence." We do not need to perform expensive get() lookups 
- *    on other documents to verify access; the path itself provides the context.
- * 2. Immutable Relational Fields: Critical fields that link data to a user (like userProfileId 
- *    or accountId) are enforced during creation and made immutable during updates to 
- *    prevent data from being "moved" between users or accounts.
- * 3. Denormalization for Performance: Relational IDs (e.g., userProfileId) are required 
- *    within document bodies to ensure the data remains self-describing and consistent 
- *    with its location in the tree.
- * 4. Prototyping Flexibility: While authorization is strictly enforced based on identity, 
- *    general data types and non-relational fields are not validated to allow for rapid 
- *    UI development and schema iteration.
- */
 
 rules_version = '2';
 service cloud.firestore {
@@ -34,24 +5,14 @@ service cloud.firestore {
 
     // --- Helper Functions ---
 
-    /**
-     * @description Checks if the request is from an authenticated user.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * @description Checks if the authenticated user's UID matches the provided userId.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * @description Checks if the user is the owner and the document already exists.
-     * Used for update and delete operations to ensure state integrity.
-     */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
@@ -60,13 +21,10 @@ service cloud.firestore {
 
     /**
      * @description Rules for UserProfile documents.
-     * @path /users/{userId}/profile
-     * @allow (create) { auth.uid: "user123" } to path /users/user123/profile with data { id: "user123", ... }
-     * @deny (create) { auth.uid: "user123" } to path /users/user999/profile
-     * @principle Restricts profile access to the account owner and enforces path-to-data consistency.
+     * @path /users/{userId}
      */
-    match /users/{userId}/profile {
-      allow get, list: if isOwner(userId);
+    match /users/{userId} {
+      allow get: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
@@ -75,9 +33,6 @@ service cloud.firestore {
     /**
      * @description Rules for Account documents.
      * @path /users/{userId}/accounts/{accountId}
-     * @allow (list) { auth.uid: "user123" } on /users/user123/accounts
-     * @deny (update) { auth.uid: "user123" } changing the userProfileId field.
-     * @principle Enforces ownership and protects the integrity of the user-account relationship.
      */
     match /users/{userId}/accounts/{accountId} {
       allow get, list: if isOwner(userId);
@@ -89,9 +44,6 @@ service cloud.firestore {
     /**
      * @description Rules for Transaction documents.
      * @path /users/{userId}/accounts/{accountId}/transactions/{transactionId}
-     * @allow (create) { auth.uid: "user1"} to /users/user1/accounts/accA/transactions/t1 with { accountId: "accA", ... }
-     * @deny (create) { auth.uid: "user1"} to /users/user1/accounts/accA/transactions/t1 with { accountId: "accB" }
-     * @principle Ensures transactions are nested correctly under the parent account and owned by the user.
      */
     match /users/{userId}/accounts/{accountId}/transactions/{transactionId} {
       allow get, list: if isOwner(userId);
@@ -103,9 +55,6 @@ service cloud.firestore {
     /**
      * @description Rules for Recipient documents.
      * @path /users/{userId}/recipients/{recipientId}
-     * @allow (get) { auth.uid: "user123" } for a recipient in their own list.
-     * @deny (list) { auth.uid: "user123" } for /users/otherUser/recipients.
-     * @principle Private recipient lists accessible only to the user who created them.
      */
     match /users/{userId}/recipients/{recipientId} {
       allow get, list: if isOwner(userId);

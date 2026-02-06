@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -43,6 +44,13 @@
         "uniqueName": {
           "type": "string",
           "description": "The user's unique name or username."
+        },
+        "watchlist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of token IDs the user is tracking."
         }
       },
       "required": [
@@ -172,13 +180,13 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}/profile",
+        "path": "/users/{userId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user profile information.  Accessible only by the user with the corresponding userId.",
+          "description": "Stores user profile information. Accessible only by the user with the corresponding userId.",
           "params": [
             {
               "name": "userId",
@@ -252,6 +260,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the BCMoney application. Each user's data is isolated under their unique user ID, facilitating simple and secure data access rules. The structure prioritizes path-based ownership for user-specific data and avoids hierarchical authorization dependencies by storing roles in the database. This approach ensures atomic operations (transactions/batches) and simplifies debugging. \n\n*   **User Profiles:** User profiles are stored under `/users/{userId}/profile`, enabling easy management and updates of profile information.\n*   **Accounts:** Accounts are stored under `/users/{userId}/accounts/{accountId}`.  This structure ensures that only the authenticated user can access their account information.\n*   **Transactions:** Transactions are stored under `/users/{userId}/accounts/{accountId}/transactions/{transactionId}`.  This enforces clear ownership and allows for efficient retrieval of a user's transaction history.\n*   **Recipients:** Recipients are stored under `/users/{userId}/recipients/{recipientId}`. This structure provides private data and allows for easy management of user's recipients lists.\n\nThis design achieves **Authorization Independence** by avoiding `get()` calls in security rules.  Each document's access control is determined solely by the path and the authenticated user's ID (`request.auth.uid`).  For example, accessing a transaction requires knowing the specific `userId` and `accountId` under which it resides, and the security rules only need to verify that `request.auth.uid == userId`.\n\nThe structure supports the required **QAPs** (Rules are not Filters) by using structural segregation. Each collection (e.g., `/users/{userId}/accounts`) contains only documents with the same security requirements (i.e., accessible only by the user with ID `userId`). This eliminates the need for complex filtering in security rules and ensures that `list` operations are secure and efficient."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. Each user's data is isolated under their unique user ID. \n\n*   **User Profiles:** User profiles are stored at the root of the user document `/users/{userId}`, which is a valid 2-segment path for a document.\n*   **Accounts:** Accounts are stored as a subcollection under the user: `/users/{userId}/accounts/{accountId}`.\n*   **Transactions:** Transactions are nested under their respective accounts: `/users/{userId}/accounts/{accountId}/transactions/{transactionId}`.\n*   **Recipients:** Personal contact lists are stored at `/users/{userId}/recipients/{recipientId}`."
   }
 }

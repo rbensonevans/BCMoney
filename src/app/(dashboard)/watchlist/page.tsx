@@ -32,10 +32,10 @@ export default function WatchlistPage() {
   const { user } = useUser()
   const { firestore } = useFirebase()
 
-  // Firestore Watchlist Persistence
+  // Firestore Watchlist Persistence - Pointing to the root user document
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return doc(firestore, 'users', user.uid, 'profile');
+    return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
   const { data: profileData, isLoading } = useDoc(profileRef);
