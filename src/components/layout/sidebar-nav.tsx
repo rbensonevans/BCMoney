@@ -16,7 +16,8 @@ import {
   SidebarHeader, 
   SidebarMenu, 
   SidebarMenuButton, 
-  SidebarMenuItem
+  SidebarMenuItem,
+  useSidebar
 } from "@/components/ui/sidebar"
 
 const menuItems = [
@@ -27,6 +28,7 @@ const menuItems = [
 
 export function SidebarNav() {
   const pathname = usePathname()
+  const { setOpenMobile, isMobile } = useSidebar()
 
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-r">
@@ -48,6 +50,11 @@ export function SidebarNav() {
                   "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-accent hover:text-accent-foreground",
                   pathname === item.href && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
                 )}
+                onClick={() => {
+                  if (isMobile) {
+                    setOpenMobile(false)
+                  }
+                }}
               >
                 <Link href={item.href}>
                   <item.icon className="h-5 w-5" />
