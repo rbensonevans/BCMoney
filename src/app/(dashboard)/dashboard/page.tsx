@@ -222,7 +222,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
           <path d="M16 8C13 8 10 9.5 8.5 12L7 16C7 16 7.5 24 16 24C24.5 24 25 16 25 16L23.5 12C22 9.5 19 8 16 8Z" fill="#FFA409"/>
           <path d="M16 24C11 24 8.5 20 8.5 18C8.5 18 9 22 16 22C23 22 23.5 18 23.5 18C23.5 20 21 24 16 24Z" fill="white"/>
           <path d="M12 14C12.5523 14 13 13.5523 13 13C13 12.4477 12.5523 12 12 12C11.4477 12 11 12.4477 11 13C11 13.5523 11.4477 14 12 14Z" fill="black"/>
-          <path d="M20 14C20.5523 14 21 13.5523 21 13C21 12.4477 20.5523 12 20 12C19.4477 12 19 12.4477 19 13C19 13.5523 19.4477 14 20 14Z" fill="black"/>
+          <path d="M20 14C20.5523 14 21 13.5523 21 13C21 12.4477 20.5523 12 20 12C19.4477 12 19 13C19 13.5523 19.4477 14 20 14Z" fill="black"/>
           <path d="M16 19C16.5523 19 17 18.5523 17 18C17 17.4477 16.5523 17 16 17C15.4477 17 15 17.4477 15 18C15 18.5523 15.4477 19 16 19Z" fill="black"/>
           <path d="M14 20C14 20 15 21 16 21C17 21 18 20 18 20" stroke="black" strokeWidth="0.5" strokeLinecap="round"/>
         </svg>
@@ -253,7 +253,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
         <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/4943.png" 
+          src="https://s2.coinmarketcap.com/static/img/coins/64x64/7083.png" 
           alt="UNI" 
           width={size} 
           height={size} 
