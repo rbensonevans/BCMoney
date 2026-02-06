@@ -32,6 +32,46 @@ import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
+// Helper component for token icons
+function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
+  if (token.symbol === 'BTC') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+          <circle cx="16" cy="16" r="16" fill="#F7931A"/>
+          <path d="M23.189 14.152c.286-1.914-.11-3.328-3.011-4.102l.614-2.464-1.498-.374-.598 2.4c-.394-.098-.788-.192-1.182-.284l.602-2.417-1.498-.374-.614 2.464c-.326-.074-.645-.148-.962-.224l.001-.005-2.066-.516-.399 1.6s1.108.254 1.085.27c.605.151.714.552.696.871l-.7 2.809c.042.011.096.026.156.048-.05-.013-.105-.026-.164-.04l-1.127 4.52c-.074.183-.26.458-.68.353.015.021-1.085-.271-1.085-.271l-.745 1.715 1.95.487c.362.091.717.185 1.066.275l-.619 2.483 1.498.374.614-2.464c.409.111.808.217 1.2.318l-.603 2.42 1.498.374.62-2.487c2.556.484 4.479.288 5.286-2.024.652-1.861-.031-2.934-1.371-3.635.975-.225 1.71-.868 1.905-2.193zm-3.41 4.802c-.464 1.862-3.601.855-4.617.603l.824-3.305c1.016.252 4.28.749 3.793 2.702zm.466-4.832c-.422 1.696-3.033.834-3.88.623l.748-2.999c.847.211 3.57.606 3.132 2.376z" fill="#FFF"/>
+        </svg>
+      </div>
+    )
+  }
+  if (token.symbol === 'ETH') {
+    return (
+      <div className="shrink-0" style={{ width: size, height: size }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+          <circle cx="16" cy="16" r="16" fill="#627EEA"/>
+          <path d="M16.498 4v8.87l7.497 3.35z" fill="#C0CBF6"/>
+          <path d="M16.498 4L9 16.22l7.498-3.35z" fill="#FFF"/>
+          <path d="M16.498 21.968v6.027l7.5-10.583z" fill="#C0CBF6"/>
+          <path d="M16.498 27.995v-6.028l-7.5-10.556z" fill="#FFF"/>
+          <path d="M16.498 20.443l7.497-4.553-7.497-3.348z" fill="#8197EE"/>
+          <path d="M9 15.89l7.498 4.553v-7.901z" fill="#C0CBF6"/>
+        </svg>
+      </div>
+    )
+  }
+  return (
+    <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
+      <Image 
+        src={`https://picsum.photos/seed/${token.id}/${size}/${size}`} 
+        alt={token.symbol}
+        fill
+        className="object-cover"
+        data-ai-hint="crypto token"
+      />
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const { toast } = useToast()
@@ -134,18 +174,10 @@ export default function DashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full overflow-hidden bg-muted relative">
-                          <Image 
-                            src={`https://picsum.photos/seed/${token.id}/40/40`} 
-                            alt={token.symbol}
-                            fill
-                            className="object-cover"
-                            data-ai-hint="crypto icon"
-                          />
-                        </div>
+                        <TokenIcon token={token} size={40} />
                         <div>
                           <p className="font-bold">{token.name}</p>
-                          <p className="text-xs text-muted-foreground">{token.symbol}</p>
+                          <p className="text-xs text-muted-foreground uppercase">{token.symbol}</p>
                         </div>
                       </div>
                       <Button 
@@ -242,18 +274,9 @@ export default function DashboardPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full overflow-hidden bg-muted relative">
-                              <Image 
-                                src={`https://picsum.photos/seed/${token.id}/32/32`} 
-                                alt={token.symbol}
-                                fill
-                                className="object-cover"
-                                data-ai-hint="crypto token"
-                              />
-                            </div>
+                            <TokenIcon token={token} size={32} />
                             <div>
                               <p className="text-sm font-bold">{token.name}</p>
-                              <p className="text-[10px] text-muted-foreground uppercase">{token.symbol}</p>
                             </div>
                           </div>
                         </TableCell>
