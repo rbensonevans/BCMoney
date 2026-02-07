@@ -357,7 +357,7 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     return (
       <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
         <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/11841.png" 
+          src="https://s2.coinmarketcap.com/static/img/coins/64x64/11840.png" 
           alt="ARB" 
           width={size} 
           height={size} 
