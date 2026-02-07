@@ -586,7 +586,11 @@ export default function DashboardPage() {
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">24h Change</TableHead>
                   <TableHead className="text-right hidden md:table-cell">Market Cap</TableHead>
-                  <TableHead className="text-right w-[80px]">Action</TableHead>
+                  <TableHead className="text-right w-[80px]">
+                    <div className="text-[10px] leading-tight uppercase font-bold">
+                      Watchlist<br/>Add
+                    </div>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
