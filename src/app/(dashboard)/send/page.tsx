@@ -1,7 +1,8 @@
+
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,10 +11,16 @@ import { Label } from "@/components/ui/label"
 import { Send, Search, Clock, Wallet, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useUser, useFirebase } from "@/firebase"
+import { doc, collection } from "firebase/firestore"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function SendPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const token = searchParams.get('token') || 'USDT'
+  const { user } = useUser()
+  const { firestore } = useFirebase()
   
   const [recipient, setRecipient] = useState("")
   const [amount, setAmount] = useState("")
@@ -21,10 +28,31 @@ export default function SendPage() {
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user || !firestore) return;
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) return;
+
+    // 1. Record the transaction
+    const txnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    setDocumentNonBlocking(txnRef, {
+      id: txnRef.id,
+      accountId: user.uid,
+      transactionDate: new Date().toISOString(),
+      amount: -numAmount,
+      transactionType: 'send',
+      tokenSymbol: token,
+      recipientAccountId: recipient
+    }, { merge: true });
+
     toast({
       title: "Funds Sent",
       description: `Successfully sent ${amount} ${token} to ${recipient}`,
     })
+
+    setTimeout(() => {
+      router.push(`/transactions?token=${token}`);
+    }, 1000);
   }
 
   const recentRecipients = [
@@ -79,6 +107,7 @@ export default function SendPage() {
                   <Input 
                     id="amount" 
                     type="number" 
+                    step="any"
                     placeholder="0.00" 
                     required 
                     value={amount}

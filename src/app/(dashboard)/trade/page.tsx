@@ -1,7 +1,8 @@
+
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,9 @@ import {
 } from "@/components/ui/select"
 import { Repeat, ArrowRightLeft, Wallet, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useUser, useFirebase } from "@/firebase"
+import { doc, collection } from "firebase/firestore"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 const TOKENS = [
   { id: '1', name: 'Bitcoin', symbol: 'BTC', price: 67432.10, balance: 0.25 },
@@ -32,8 +36,11 @@ const TOKENS = [
 
 export default function TradePage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const sourceToken = searchParams.get('token') || 'BTC'
   const { toast } = useToast()
+  const { user } = useUser()
+  const { firestore } = useFirebase()
   
   const [targetToken, setTargetToken] = useState(sourceToken === "ETH" ? "BTC" : "ETH")
   const [amount, setAmount] = useState("")
@@ -45,10 +52,41 @@ export default function TradePage() {
 
   const handleTrade = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user || !firestore) return;
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) return;
+
+    // 1. Record the "Sell" part of the trade
+    const sellTxnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    setDocumentNonBlocking(sellTxnRef, {
+      id: sellTxnRef.id,
+      accountId: user.uid,
+      transactionDate: new Date().toISOString(),
+      amount: -numAmount,
+      transactionType: 'trade',
+      tokenSymbol: sourceToken,
+    }, { merge: true });
+
+    // 2. Record the "Buy" part of the trade
+    const buyTxnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    setDocumentNonBlocking(buyTxnRef, {
+      id: buyTxnRef.id,
+      accountId: user.uid,
+      transactionDate: new Date().toISOString(),
+      amount: numAmount * exchangeRate,
+      transactionType: 'trade',
+      tokenSymbol: targetToken,
+    }, { merge: true });
+
     toast({
       title: "Trade Executed",
       description: `Successfully swapped ${amount} ${sourceToken} for ${targetToken}.`,
     })
+
+    setTimeout(() => {
+      router.push(`/transactions?token=${sourceToken}`);
+    }, 1000);
   }
 
   return (
@@ -83,6 +121,7 @@ export default function TradePage() {
                 <div className="flex gap-4">
                   <Input 
                     type="number" 
+                    step="any"
                     placeholder="0.00" 
                     className="text-2xl font-bold h-14 bg-transparent border-none focus-visible:ring-0 px-0"
                     value={amount}

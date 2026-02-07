@@ -54,6 +54,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "uniqueName": {
+          "type": "string",
+          "description": "A unique handle for the user."
         }
       },
       "required": [
@@ -148,11 +152,15 @@
         },
         "transactionType": {
           "type": "string",
-          "description": "The type of transaction, e.g., 'deposit', 'withdrawal', 'send'."
+          "description": "The type of transaction, e.g., 'deposit', 'withdrawal', 'send', 'trade'."
+        },
+        "tokenSymbol": {
+          "type": "string",
+          "description": "Symbol of the token involved in the transaction."
         },
         "recipientAccountId": {
           "type": "string",
-          "description": "Reference to recipient Account (if applicable). (Relationship: Account 1:N Transaction, optional recipient)",
+          "description": "Reference to recipient Account (if applicable).",
           "format": "uuid"
         }
       },
@@ -161,7 +169,8 @@
         "accountId",
         "transactionDate",
         "amount",
-        "transactionType"
+        "transactionType",
+        "tokenSymbol"
       ]
     },
     "Recipient": {
@@ -184,11 +193,11 @@
         },
         "ethereumAddress": {
           "type": "string",
-          "description": "Ethereum address of the recipient."
+          "description": "Ethereum address or handle of the recipient."
         },
         "listType": {
           "type": "string",
-          "description": "The list type the recipient belongs to: 'Family', 'Friends', or 'General'."
+          "description": "The list type the recipient belongs to: 'family', 'friends', or 'general'."
         }
       },
       "required": [
@@ -251,7 +260,7 @@
           "schema": {
             "$ref": "#/backend/entities/Account"
           },
-          "description": "Stores user account information. Includes denormalized 'userProfileId' for authorization independence.",
+          "description": "Stores user account information.",
           "params": [
             {
               "name": "accountId",
@@ -267,7 +276,7 @@
           "schema": {
             "$ref": "#/backend/entities/Transaction"
           },
-          "description": "Stores transaction history for a specific account. Includes denormalized 'accountId' for authorization independence.",
+          "description": "Stores transaction history for a specific account.",
           "params": [
             {
               "name": "accountId",
@@ -287,7 +296,7 @@
           "schema": {
             "$ref": "#/backend/entities/Recipient"
           },
-          "description": "Stores recipient information for a specific user. Includes denormalized 'userProfileId' for authorization independence.",
+          "description": "Stores recipient information for a specific user.",
           "params": [
             {
               "name": "userProfileId",

@@ -1,7 +1,8 @@
+
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,10 +10,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowUpRight, AlertCircle, Info, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useUser, useFirebase } from "@/firebase"
+import { doc, collection } from "firebase/firestore"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function WithdrawPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const token = searchParams.get('token') || 'ETH'
+  const { user } = useUser()
+  const { firestore } = useFirebase()
   
   const [address, setAddress] = useState("")
   const [amount, setAmount] = useState("")
@@ -20,10 +27,31 @@ export default function WithdrawPage() {
 
   const handleWithdraw = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user || !firestore) return;
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) return;
+
+    // 1. Record the transaction
+    const txnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    setDocumentNonBlocking(txnRef, {
+      id: txnRef.id,
+      accountId: user.uid,
+      transactionDate: new Date().toISOString(),
+      amount: -numAmount,
+      transactionType: 'withdrawal',
+      tokenSymbol: token,
+      recipientAccountId: address // External address
+    }, { merge: true });
+
     toast({
       title: "Withdrawal Initiated",
       description: `Sending ${amount} ${token} to ${address.substring(0, 6)}...`,
     })
+
+    setTimeout(() => {
+      router.push(`/transactions?token=${token}`);
+    }, 1000);
   }
 
   return (
@@ -62,6 +90,7 @@ export default function WithdrawPage() {
                 <Input 
                   id="amount" 
                   type="number" 
+                  step="any"
                   placeholder="0.00" 
                   required 
                   value={amount}

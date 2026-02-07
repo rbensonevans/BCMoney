@@ -14,6 +14,7 @@ import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection, getDocs, deleteDoc } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { signOut } from "firebase/auth"
+import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -62,7 +63,7 @@ export default function ProfilePage() {
     setDocumentNonBlocking(profileRef, {
       ...formData,
       id: user.uid,
-      phoneNumber: formData.phone, // mapping field name
+      phoneNumber: formData.phone,
     }, { merge: true });
 
     toast({
@@ -74,11 +75,10 @@ export default function ProfilePage() {
   const handleSeedTestData = () => {
     if (!profileRef || !user || !firestore) return;
     
-    // '1' is the ID for BTC in TOP_30_TOKENS
     const btcId = '1';
     const updatedOwnedTokens = Array.from(new Set([...(profileData?.ownedTokens || []), btcId]));
     
-    // 1. Update Profile with handle and owned tokens
+    // 1. Update Profile
     setDocumentNonBlocking(profileRef, {
       uniqueName: "@rbensonevans",
       ownedTokens: updatedOwnedTokens,
@@ -86,12 +86,22 @@ export default function ProfilePage() {
       email: user.email || ""
     }, { merge: true });
 
-    // 2. Set BTC Balance to 10 in subcollection
+    // 2. Set BTC Balance
     const btcBalanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', btcId);
     setDocumentNonBlocking(btcBalanceRef, {
       id: btcId,
       tokenId: btcId,
       balance: 10
+    }, { merge: true });
+
+    // 3. Provision primary account
+    const accountRef = doc(firestore, 'accounts', user.uid);
+    setDocumentNonBlocking(accountRef, {
+      id: user.uid,
+      userProfileId: user.uid,
+      uniqueName: "@rbensonevans",
+      ethereumAddress: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+      balance: 1000.0
     }, { merge: true });
 
     toast({
@@ -105,29 +115,34 @@ export default function ProfilePage() {
     
     setIsResetting(true)
     try {
-      // 1. Delete all recipients
+      // Delete recipients
       const recipientsRef = collection(firestore, 'user_profiles', user.uid, 'recipients');
       const recipientsSnap = await getDocs(recipientsRef);
-      const deletePromises = recipientsSnap.docs.map(d => deleteDoc(d.ref));
-      await Promise.all(deletePromises);
+      await Promise.all(recipientsSnap.docs.map(d => deleteDoc(d.ref)));
 
-      // 2. Delete all balances
+      // Delete balances
       const balancesRef = collection(firestore, 'user_profiles', user.uid, 'balances');
       const balancesSnap = await getDocs(balancesRef);
-      const balanceDeletePromises = balancesSnap.docs.map(d => deleteDoc(d.ref));
-      await Promise.all(balanceDeletePromises);
+      await Promise.all(balancesSnap.docs.map(d => deleteDoc(d.ref)));
 
-      // 3. Delete the profile document
+      // Delete transactions
+      const transactionsRef = collection(firestore, 'accounts', user.uid, 'transactions');
+      const transactionsSnap = await getDocs(transactionsRef);
+      await Promise.all(transactionsSnap.docs.map(d => deleteDoc(d.ref)));
+
+      // Delete account
+      await deleteDoc(doc(firestore, 'accounts', user.uid));
+
+      // Delete profile
       if (profileRef) {
         await deleteDoc(profileRef);
       }
 
       toast({
         title: "Data Cleared",
-        description: "Your profile, balances, and recipients have been deleted. Logging out...",
+        description: "All records deleted. Logging out...",
       })
 
-      // 4. Log out and redirect
       setTimeout(async () => {
         await signOut(auth);
         router.push("/");
@@ -221,7 +236,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Clearing your data will permanently delete your profile, balances, and recipients.
+                Clearing your data will permanently delete all records including transactions.
               </p>
               <Button 
                 variant="destructive" 
