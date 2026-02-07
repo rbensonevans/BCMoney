@@ -6,41 +6,31 @@ service cloud.firestore {
      * BCMONEY SECURITY RULES
      * 
      * Implements a robust User-Ownership Silo model.
-     * Access is granted to any path starting with /collection/{userId}/...
-     * where {userId} matches the authenticated user's UID.
+     * Users have full access to any path that starts with their UID.
      */
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper to verify ownership of a silo
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     // Silo: User Profiles
     // Matches /user_profiles/{userId} and all sub-resources (balances, recipients)
     match /user_profiles/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      
       match /{allPaths=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
     // Silo: Accounts
     // Matches /accounts/{userId} and all sub-resources (transactions)
     match /accounts/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      
       match /{allPaths=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
-    }
-
-    // Explicitly allow listing the transactions collection for the owner
-    // This provides a fallback for collection-group-like list operations
-    match /accounts/{userId}/transactions {
-      allow read, write: if isOwner(userId);
     }
   }
 }

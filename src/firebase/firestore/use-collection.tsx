@@ -68,6 +68,7 @@ export function useCollection<T = any>(
           if (memoizedTargetRefOrQuery && 'path' in memoizedTargetRefOrQuery) {
             path = (memoizedTargetRefOrQuery as any).path;
           } else {
+            // For queries, we attempt to report a generic description if path is hidden
             path = 'filtered-collection-query';
           }
         } catch (e) {
