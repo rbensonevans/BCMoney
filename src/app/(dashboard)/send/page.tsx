@@ -8,17 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Send, Search, Clock, Wallet, ArrowLeft } from "lucide-react"
+import { Send, Search, Clock, Wallet, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useUser, useFirebase } from "@/firebase"
+import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function SendPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const token = searchParams.get('token') || 'USDT'
+  const token = searchParams.get('token') || 'BTC'
   const { user } = useUser()
   const { firestore } = useFirebase()
   
@@ -26,12 +27,40 @@ export default function SendPage() {
   const [amount, setAmount] = useState("")
   const { toast } = useToast()
 
+  // Find token ID and fetch real balance from Firestore
+  const currentToken = TOP_30_TOKENS.find(t => t.symbol === token)
+  const tokenId = currentToken?.id
+
+  const balanceRef = useMemoFirebase(() => {
+    if (!firestore || !user || !tokenId) return null;
+    return doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
+  }, [firestore, user, tokenId]);
+
+  const { data: balanceData, isLoading: isBalanceLoading } = useDoc(balanceRef);
+  const currentBalance = balanceData?.balance ?? 0;
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user || !firestore) return;
+    if (!user || !firestore || !tokenId) return;
 
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) return;
+    if (isNaN(numAmount) || numAmount <= 0) {
+        toast({
+            variant: "destructive",
+            title: "Invalid amount",
+            description: "Please enter a valid amount to send."
+        })
+        return;
+    }
+
+    if (numAmount > currentBalance) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient balance",
+            description: `You only have ${currentBalance.toLocaleString()} ${token} available.`
+        })
+        return;
+    }
 
     // 1. Record the transaction
     const txnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
@@ -44,6 +73,15 @@ export default function SendPage() {
       tokenSymbol: token,
       recipientAccountId: recipient
     }, { merge: true });
+
+    // 2. Update the balance document
+    if (balanceRef) {
+        setDocumentNonBlocking(balanceRef, {
+            balance: currentBalance - numAmount,
+            tokenId: tokenId,
+            id: tokenId
+        }, { merge: true });
+    }
 
     toast({
       title: "Funds Sent",
@@ -76,7 +114,13 @@ export default function SendPage() {
       <Card className="shadow-lg border-none overflow-hidden">
         <div className="bg-primary p-6 text-primary-foreground flex flex-col items-center">
           <p className="text-sm opacity-80 uppercase tracking-widest mb-1">Available {token}</p>
-          <p className="text-4xl font-bold">1,250.00 {token}</p>
+          {isBalanceLoading ? (
+            <div className="h-10 flex items-center">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <p className="text-4xl font-bold">{currentBalance.toLocaleString()} {token}</p>
+          )}
         </div>
         <CardHeader>
           <CardTitle>Transfer Details</CardTitle>
@@ -121,7 +165,7 @@ export default function SendPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 h-12 gap-2 text-lg">
+            <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 h-12 gap-2 text-lg" disabled={isBalanceLoading}>
               <Send className="h-5 w-5" /> Send Funds Now
             </Button>
           </form>

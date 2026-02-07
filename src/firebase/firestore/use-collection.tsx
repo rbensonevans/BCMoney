@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -62,11 +63,12 @@ export function useCollection<T = any>(
         let path = 'collection-query';
         try {
           if (memoizedTargetRefOrQuery) {
+            // Use path if available (CollectionReference)
             if ('path' in memoizedTargetRefOrQuery) {
               path = (memoizedTargetRefOrQuery as any).path;
             } else {
-              // Safe fallback for query objects to avoid accessing private internals
-              path = 'filtered-collection-query';
+              // For Queries, we can't safely access internal paths, so use a descriptive placeholder
+              path = 'filtered-query-request';
             }
           }
         } catch (e) {

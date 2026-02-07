@@ -1,29 +1,31 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * BCMONEY SECURITY RULES
-     * 
-     * Implements a direct User-Ownership Silo model with recursive wildcard matching.
-     * This ensures that any document or sub-collection under a user's ID path
-     * is fully accessible to that user, and ONLY that user.
-     */
-
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Silo: User Profiles
-    // Matches /user_profiles/{userId} and all sub-collections (balances, recipients, etc.)
-    match /user_profiles/{userId}/{allPaths=**} {
+    // User Profile Silo
+    match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
+      
+      match /balances/{tokenId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      match /recipients/{recipientId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
     }
 
-    // Silo: Accounts
-    // Matches /accounts/{userId} and all sub-collections (transactions, etc.)
-    match /accounts/{userId}/{allPaths=**} {
+    // Account Silo
+    match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
+      
+      match /transactions/{transactionId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
     }
   }
 }
