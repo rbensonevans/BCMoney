@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -13,59 +12,47 @@
         },
         "firstName": {
           "type": "string",
-          "description": "The user's first name."
+          "description": "User's first name."
         },
         "middleName": {
           "type": "string",
-          "description": "The user's middle name."
+          "description": "User's middle name."
         },
         "lastName": {
           "type": "string",
-          "description": "The user's last name."
+          "description": "User's last name."
         },
         "address": {
           "type": "string",
-          "description": "The user's physical address."
+          "description": "User's physical address."
         },
         "phoneNumber": {
           "type": "string",
-          "description": "The user's phone number."
+          "description": "User's phone number."
         },
         "email": {
           "type": "string",
-          "description": "The user's email address.",
+          "description": "User's email address.",
           "format": "email"
         },
         "photoUrl": {
           "type": "string",
           "description": "URL of the user's profile photo.",
           "format": "uri"
-        },
-        "uniqueName": {
-          "type": "string",
-          "description": "The user's unique name or username."
-        },
-        "watchlist": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of token IDs the user is tracking."
         }
       },
       "required": [
         "id",
         "firstName",
         "lastName",
-        "email",
-        "uniqueName"
+        "email"
       ]
     },
     "Account": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Account",
       "type": "object",
-      "description": "Represents a user's account information.",
+      "description": "Represents a user's account, linking it to a unique name and Ethereum address.",
       "properties": {
         "id": {
           "type": "string",
@@ -75,31 +62,32 @@
           "type": "string",
           "description": "Reference to UserProfile. (Relationship: UserProfile 1:1 Account)"
         },
-        "accountNumber": {
+        "uniqueName": {
           "type": "string",
-          "description": "The user's account number."
+          "description": "A unique name chosen by the user for their account."
         },
-        "ethereumPublicAddress": {
+        "ethereumAddress": {
           "type": "string",
           "description": "The user's Ethereum public address."
         },
         "balance": {
           "type": "number",
-          "description": "The user's current balance."
+          "description": "The current balance of the account."
         }
       },
       "required": [
         "id",
         "userProfileId",
-        "accountNumber",
-        "ethereumPublicAddress"
+        "uniqueName",
+        "ethereumAddress",
+        "balance"
       ]
     },
     "Transaction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Transaction",
       "type": "object",
-      "description": "Represents a transaction.",
+      "description": "Represents a financial transaction.",
       "properties": {
         "id": {
           "type": "string",
@@ -109,37 +97,38 @@
           "type": "string",
           "description": "Reference to Account. (Relationship: Account 1:N Transaction)"
         },
-        "date": {
+        "transactionDate": {
           "type": "string",
-          "description": "The date and time of the transaction.",
+          "description": "Date and time of the transaction.",
           "format": "date-time"
         },
         "amount": {
           "type": "number",
           "description": "The amount of the transaction."
         },
-        "type": {
+        "transactionType": {
           "type": "string",
-          "description": "The type of transaction (e.g., deposit, withdrawal, transfer)."
+          "description": "The type of transaction, e.g., 'deposit', 'withdrawal', 'send'."
         },
-        "toAccountId": {
+        "recipientAccountId": {
           "type": "string",
-          "description": "Reference to Account. (Relationship: Account 1:N Transaction). The ID of the recipient account if it is a sending transaction."
+          "description": "Reference to recipient Account (if applicable). (Relationship: Account 1:N Transaction, optional recipient)",
+          "format": "uuid"
         }
       },
       "required": [
         "id",
         "accountId",
-        "date",
+        "transactionDate",
         "amount",
-        "type"
+        "transactionType"
       ]
     },
     "Recipient": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Recipient",
       "type": "object",
-      "description": "Represents a recipient in the user's recipient lists.",
+      "description": "Represents a recipient in one of the user's lists (Family, Friends, General).",
       "properties": {
         "id": {
           "type": "string",
@@ -151,22 +140,22 @@
         },
         "name": {
           "type": "string",
-          "description": "The name of the recipient."
+          "description": "Name of the recipient."
         },
-        "accountNumber": {
+        "ethereumAddress": {
           "type": "string",
-          "description": "The account number of the recipient."
+          "description": "Ethereum address of the recipient."
         },
         "listType": {
           "type": "string",
-          "description": "The type of list the recipient belongs to (e.g., Family, Friends, General)."
+          "description": "The list type the recipient belongs to: 'Family', 'Friends', or 'General'."
         }
       },
       "required": [
         "id",
         "userProfileId",
         "name",
-        "accountNumber",
+        "ethereumAddress",
         "listType"
       ]
     }
@@ -180,86 +169,78 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
+        "path": "/user_profiles/{userProfileId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user profile information. Accessible only by the user with the corresponding userId.",
+          "description": "Stores user profile information. The 'userProfileId' MUST match the Firebase auth 'uid'.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user."
+              "name": "userProfileId",
+              "description": "The unique ID of the user profile, matching the Firebase auth 'uid'."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/accounts/{accountId}",
+        "path": "/accounts/{accountId}",
         "definition": {
           "entityName": "Account",
           "schema": {
             "$ref": "#/backend/entities/Account"
           },
-          "description": "Stores account information for each user. Accessible only by the user with the corresponding userId.",
+          "description": "Stores user account information. Includes denormalized 'userProfileId' for authorization independence.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
               "name": "accountId",
-              "description": "The unique identifier of the account."
+              "description": "The unique ID of the user account."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/accounts/{accountId}/transactions/{transactionId}",
+        "path": "/accounts/{accountId}/transactions/{transactionId}",
         "definition": {
           "entityName": "Transaction",
           "schema": {
             "$ref": "#/backend/entities/Transaction"
           },
-          "description": "Stores transaction history for each account. Accessible only by the user with the corresponding userId.",
+          "description": "Stores transaction history for a specific account. Includes denormalized 'accountId' for authorization independence.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
               "name": "accountId",
-              "description": "The unique identifier of the account."
+              "description": "The unique ID of the user account."
             },
             {
               "name": "transactionId",
-              "description": "The unique identifier of the transaction."
+              "description": "The unique ID of the transaction."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/recipients/{recipientId}",
+        "path": "/user_profiles/{userProfileId}/recipients/{recipientId}",
         "definition": {
           "entityName": "Recipient",
           "schema": {
             "$ref": "#/backend/entities/Recipient"
           },
-          "description": "Stores the user's recipients lists. Accessible only by the user with the corresponding userId.",
+          "description": "Stores recipient information for a specific user. Includes denormalized 'userProfileId' for authorization independence.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user."
+              "name": "userProfileId",
+              "description": "The unique ID of the user profile."
             },
             {
               "name": "recipientId",
-              "description": "The unique identifier of the recipient."
+              "description": "The unique ID of the recipient."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. Each user's data is isolated under their unique user ID. \n\n*   **User Profiles:** User profiles are stored at the root of the user document `/users/{userId}`, which is a valid 2-segment path for a document.\n*   **Accounts:** Accounts are stored as a subcollection under the user: `/users/{userId}/accounts/{accountId}`.\n*   **Transactions:** Transactions are nested under their respective accounts: `/users/{userId}/accounts/{accountId}/transactions/{transactionId}`.\n*   **Recipients:** Personal contact lists are stored at `/users/{userId}/recipients/{recipientId}`."
+    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, following the principles of Authorization Independence, Clarity of Intent, DBAC, and QAPs. It uses Structural Segregation to ensure homogeneous security postures and Access Modeling to standardize authorization patterns.\n\n1.  **User Profiles:** User profiles are stored in a collection `/user_profiles/{userProfileId}`. This allows direct access to profile information based on the `userProfileId`. Since UserProfile is considered private data and to achieve Authorization Independence, access is path-based using the `request.auth.uid`. Because of the 1:1 relationship with Account, `userProfileId` is the same as `request.auth.uid`.\n2.  **Accounts:** Accounts are stored in `/accounts/{accountId}`. This collection stores data related to a specific account. The `userProfileId` is denormalized in the Account document. This ensures authorization independence as the rule for the account does not rely on a `get()` call to the UserProfile.\n3.  **Transactions:** Transactions are stored as a subcollection of accounts at `/accounts/{accountId}/transactions/{transactionId}`. This allows efficient querying of transactions associated with a specific account. `accountId` is denormalized in the Transaction document. This maintains Authorization Independence because the rule can directly verify the account without needing parent document data.\n4.  **Recipients:** Recipients are stored as a subcollection of user profiles at `/user_profiles/{userProfileId}/recipients/{recipientId}`. This allows users to manage their recipients list. `userProfileId` is denormalized in the Recipient document to enforce authorization independence, meaning that the rules do not need to fetch the parent `user_profile` document to enforce recipient level authorization.\n\nThis structure ensures Authorization Independence by denormalizing authorization attributes (e.g., `userProfileId` in Account, Transaction, and Recipient documents). This avoids the need for `get()` calls in security rules, simplifying the rules and enabling atomic operations. Structural Segregation is achieved by storing different data types (profiles, accounts, transactions, recipients) in separate collections or subcollections, each with its specific security requirements. Access Modeling leverages path-based ownership (`/user_profiles/{userProfileId}`) and subcollections (`/accounts/{accountId}/transactions/{transactionId}`) to clearly define ownership and access rights."
   }
 }

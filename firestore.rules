@@ -1,37 +1,121 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
+    /**
+     * DATABASE SECURITY POSTURE AND ARCHITECTURE
+     *
+     * Core Philosophy:
+     * This ruleset implements a strict User-Ownership model. Access to data is gated by the 
+     * relationship between the authenticated user and the specific resource. We prioritize 
+     * "Authorization Independence" by ensuring documents contain the necessary fields (like 
+     * userProfileId) to make security decisions without chaining multiple document lookups 
+     * where possible.
+     *
+     * Data Structure:
+     * - /user_profiles/{uid}: Root user data, where the Document ID matches the Auth UID.
+     * - /accounts/{accountId}: Top-level account collection. Secured via the 'userProfileId' field.
+     * - /accounts/{accountId}/transactions/{id}: Nested history. Secured via parent account ownership.
+     * - /user_profiles/{uid}/recipients/{id}: User-specific contact list. Secured via path-based ownership.
+     *
+     * Key Security Decisions:
+     * 1. Path-Based vs Field-Based: We use path-based ownership for profiles and recipients 
+     *    (Pattern 1) and field-based ownership for accounts (Pattern 5 logic applied to private data).
+     * 2. Transaction Integrity: Transactions are treated as immutable records of financial activity; 
+     *    while the rules allow updates for flexibility in prototyping, critical relational fields 
+     *    (accountId) are locked.
+     * 3. List Operations: Listing is restricted to the owner's scope. Top-level collections that 
+     *    cannot be safely filtered by path are restricted to 'get' only or specific query requirements.
+     * 4. Denormalization: We expect 'userProfileId' to be present on documents to allow for 
+     *    performant rules that avoid costly 'get()' calls.
+     */
 
+    // --- HELPER FUNCTIONS ---
+
+    /** 
+     * @description Checks if the request is made by a signed-in user.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
 
+    /** 
+     * @description Checks if the provided ID matches the authenticated user's UID.
+     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- Collection Rules ---
+    /** 
+     * @description Combined check for existence and ownership, used for updates and deletes.
+     */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /** 
+     * @description Helper to verify if the user owns a specific account by looking up the account document.
+     */
+    function isAccountOwner(accId) {
+      return isSignedIn() && get(/databases/$(database)/documents/accounts/$(accId)).data.userProfileId == request.auth.uid;
+    }
+
+    // --- COLLECTION RULES ---
 
     /**
-     * @description Rules for UserProfile documents and subcollections.
-     * All user data is nested under /users/{userId}, so we enforce ownership at the top level.
+     * @description Controls access to user profile documents.
+     * @path /user_profiles/{userProfileId}
+     * @allow (get) If the user is the owner (UID matches path ID).
+     * @deny (create) If the internal 'id' field does not match the path ID or the user is not the owner.
+     * @principle Pattern 4: Self-Creation. Enforces document ID consistency with Auth UID.
      */
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    match /user_profiles/{userProfileId} {
+      allow get, list: if isOwner(userProfileId);
+      allow create: if isOwner(userProfileId) && request.resource.data.id == userProfileId;
+      allow update: if isExistingOwner(userProfileId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userProfileId);
 
-      match /accounts/{accountId} {
-        allow read, write: if isOwner(userId);
-
-        match /transactions/{transactionId} {
-          allow read, write: if isOwner(userId);
-        }
-      }
-
+      /**
+       * @description Controls access to a user's saved recipients.
+       * @path /user_profiles/{userProfileId}/recipients/{recipientId}
+       * @allow (list) If the authenticated user matches the parent profile ID.
+       * @deny (create) If the 'userProfileId' in data doesn't match the path.
+       * @principle Pattern 1: Ownership. Restricts access to a user's own data tree.
+       */
       match /recipients/{recipientId} {
-        allow read, write: if isOwner(userId);
+        allow get, list: if isOwner(userProfileId);
+        allow create: if isOwner(userProfileId) && request.resource.data.userProfileId == userProfileId;
+        allow update: if isExistingOwner(userProfileId) && request.resource.data.userProfileId == resource.data.userProfileId;
+        allow delete: if isExistingOwner(userProfileId);
+      }
+    }
+
+    /**
+     * @description Controls access to financial accounts.
+     * @path /accounts/{accountId}
+     * @allow (get) If the account's 'userProfileId' field matches the user's UID.
+     * @deny (list) Denied at top-level to prevent enumeration; users should query by userProfileId.
+     * @principle Field-based ownership. Uses denormalized UID for authorization independence.
+     */
+    match /accounts/{accountId} {
+      allow get: if isSignedIn() && resource.data.userProfileId == request.auth.uid;
+      allow list: if false; // Security: Prevent listing all accounts. Force path-based or specific UID queries.
+      allow create: if isSignedIn() && request.resource.data.userProfileId == request.auth.uid;
+      allow update: if isSignedIn() && resource != null && resource.data.userProfileId == request.auth.uid && request.resource.data.userProfileId == resource.data.userProfileId;
+      allow delete: if isSignedIn() && resource != null && resource.data.userProfileId == request.auth.uid;
+
+      /**
+       * @description Controls access to transaction history for an account.
+       * @path /accounts/{accountId}/transactions/{transactionId}
+       * @allow (create) If the user owns the parent account and provides the correct accountId.
+       * @deny (get) If the user does not own the parent account.
+       * @principle Pattern 3/Ownership: Subcollection access gated by parent account ownership.
+       */
+      match /transactions/{transactionId} {
+        allow get, list: if isAccountOwner(accountId);
+        allow create: if isAccountOwner(accountId) && request.resource.data.accountId == accountId;
+        allow update: if isAccountOwner(accountId) && request.resource.data.accountId == resource.data.accountId;
+        allow delete: if isAccountOwner(accountId);
       }
     }
   }
