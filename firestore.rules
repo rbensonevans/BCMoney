@@ -14,20 +14,20 @@ service cloud.firestore {
     }
 
     // Silo: User Profiles
+    // Matches /user_profiles/{userId} and all sub-paths
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Explicitly allow all sub-collections (balances, recipients, etc.)
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
     // Silo: Accounts
+    // Matches /accounts/{userId} and all sub-paths (including /transactions)
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Explicitly allow all sub-collections (transactions, etc.)
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
