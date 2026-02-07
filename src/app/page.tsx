@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Wallet, ShieldCheck, Lock, Loader2, ArrowRight } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Wallet, ShieldCheck, Lock, Loader2, ArrowRight, AlertCircle } from "lucide-react"
 import { useAuth, useUser } from "@/firebase/provider"
 import { initiateEmailSignIn, initiateEmailSignUp } from "@/firebase/non-blocking-login"
 import { useToast } from "@/hooks/use-toast"
@@ -18,6 +18,7 @@ export default function LandingPage() {
   const [password, setPassword] = useState("")
   const [isRegistering, setIsRegistering] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const router = useRouter()
   const auth = useAuth()
@@ -32,30 +33,36 @@ export default function LandingPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     
     if (isRegistering && password.length < 6) {
+      const msg = "Password must be at least 6 characters long."
+      setError(msg)
       toast({
         variant: "destructive",
         title: "Weak Password",
-        description: "Password must be at least 6 characters long.",
+        description: msg,
       })
       return
     }
 
     setIsLoading(true)
 
-    const handleAuthError = (error: any) => {
+    const handleAuthError = (err: any) => {
       setIsLoading(false)
       let errorMessage = "Something went wrong. Please try again."
 
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
         errorMessage = "Invalid email or password. Please check your credentials and try again."
-      } else if (error.code === 'auth/email-already-in-use') {
+      } else if (err.code === 'auth/email-already-in-use') {
         errorMessage = "This email is already associated with an account."
-      } else if (error.code === 'auth/too-many-requests') {
+      } else if (err.code === 'auth/too-many-requests') {
         errorMessage = "Too many failed attempts. Please try again later."
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = "The password is too weak."
       }
 
+      setError(errorMessage)
       toast({
         variant: "destructive",
         title: "Authentication Failed",
@@ -139,6 +146,13 @@ export default function LandingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -183,6 +197,7 @@ export default function LandingPage() {
               onClick={() => {
                 setIsRegistering(!isRegistering)
                 setIsLoading(false)
+                setError(null)
               }}
             >
               {isRegistering ? "Login now" : "Register now"}
