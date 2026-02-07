@@ -6,11 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Trash2, Heart, Users, Globe, Loader2 } from "lucide-react"
+import { Plus, Trash2, Heart, Users, Globe, Loader2, Database, Eraser } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useUser, useFirebase, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, doc } from "firebase/firestore"
+import { collection, doc, getDocs, writeBatch } from "firebase/firestore"
 import { setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 interface RecipientListProps {
@@ -96,6 +96,8 @@ export default function RecipientsPage() {
   const { toast } = useToast()
   const { user } = useUser()
   const { firestore } = useFirebase()
+  const [isSeeding, setIsSeeding] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
 
   const recipientsRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -108,8 +110,6 @@ export default function RecipientsPage() {
     if (!recipientsRef || !user) return;
     
     const handle = handleInput.startsWith("@") ? handleInput : `@${handleInput}`;
-    
-    // Create a new document reference to get the ID first
     const newDocRef = doc(recipientsRef);
     
     setDocumentNonBlocking(newDocRef, {
@@ -136,11 +136,100 @@ export default function RecipientsPage() {
     });
   };
 
+  const handleSeedSamples = async () => {
+    if (!recipientsRef || !user) return;
+    setIsSeeding(true);
+    try {
+      const samples = [
+        { name: "Alice Smith", handle: "@alice", type: "family" },
+        { name: "Bob Builder", handle: "@bob_the_builder", type: "friends" },
+        { name: "Charlie Day", handle: "@charlie_d", type: "friends" },
+        { name: "Diana Prince", handle: "@wonder_d", type: "general" },
+        { name: "Edward Stark", handle: "@ned", type: "family" },
+      ];
+
+      for (const sample of samples) {
+        const newDocRef = doc(recipientsRef);
+        setDocumentNonBlocking(newDocRef, {
+          id: newDocRef.id,
+          name: sample.name,
+          ethereumAddress: sample.handle,
+          listType: sample.type,
+          userProfileId: user.uid
+        }, { merge: true });
+      }
+
+      toast({
+        title: "Samples Seeded",
+        description: `Successfully added ${samples.length} sample recipients.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Seeding Failed",
+        description: error.message,
+      });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!recipientsRef || !firestore) return;
+    setIsClearing(true);
+    try {
+      const snapshot = await getDocs(recipientsRef);
+      if (snapshot.empty) {
+        toast({ title: "List is already empty" });
+        return;
+      }
+      const batch = writeBatch(firestore);
+      snapshot.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      toast({
+        title: "List Cleared",
+        description: "All recipients have been removed.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Clear Failed",
+        description: error.message,
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-primary">Managed Recipients</h1>
-        <p className="text-muted-foreground">Organize and manage your frequent contacts</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-primary">Managed Recipients</h1>
+          <p className="text-muted-foreground">Organize and manage your frequent contacts</p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-primary border-primary/20"
+            onClick={handleSeedSamples}
+            disabled={isSeeding || isLoading}
+          >
+            {isSeeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
+            Seed Samples
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-destructive border-destructive/20"
+            onClick={handleClearAll}
+            disabled={isClearing || isLoading}
+          >
+            {isClearing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Eraser className="h-4 w-4 mr-2" />}
+            Clear All
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="family" className="w-full">
