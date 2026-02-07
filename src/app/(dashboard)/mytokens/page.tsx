@@ -411,7 +411,7 @@ export default function MyTokensPage() {
 
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return doc(firestore, 'users', user.uid);
+    return doc(firestore, 'user_profiles', user.uid);
   }, [firestore, user]);
 
   const { data: profileData, isLoading } = useDoc(profileRef);
