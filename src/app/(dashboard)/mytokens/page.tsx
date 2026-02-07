@@ -477,7 +477,12 @@ export default function MyTokensPage() {
                         <div className="flex items-center gap-3">
                           <TokenIcon token={token} size={32} />
                           <div>
-                            <p className="text-sm font-bold">{token.name}</p>
+                            <Link 
+                              href="/dashboard" 
+                              className="text-sm font-bold hover:underline text-primary transition-colors"
+                            >
+                              {token.name}
+                            </Link>
                           </div>
                         </div>
                       </TableCell>
