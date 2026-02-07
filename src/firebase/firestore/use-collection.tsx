@@ -64,11 +64,11 @@ export function useCollection<T = any>(
         // Safe path extraction using public SDK properties only
         let path = 'unknown-path';
         try {
-          if (memoizedTargetRefOrQuery.type === 'collection') {
-            path = (memoizedTargetRefOrQuery as CollectionReference).path;
+          if ('path' in memoizedTargetRefOrQuery) {
+            path = (memoizedTargetRefOrQuery as any).path;
           } else {
-            // For queries, we avoid private properties like _query to prevent assertion failures
-            path = 'query-path';
+            // For Query objects, we avoid private properties but identify the operation
+            path = 'filtered-collection-query';
           }
         } catch (e) {
           path = 'error-extracting-path';

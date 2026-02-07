@@ -27,11 +27,20 @@ service cloud.firestore {
     // Silo: Accounts
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      // Explicitly allow all subcollections (transactions, etc.)
-      match /{allPaths=**} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
+    }
+
+    // Explicitly allow listing and managing transactions for the owner
+    match /accounts/{userId}/transactions {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /accounts/{userId}/transactions/{transactionId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Catch-all for other subcollections under accounts
+    match /accounts/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
   }
 }
