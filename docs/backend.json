@@ -63,6 +63,31 @@
         "email"
       ]
     },
+    "TokenBalance": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TokenBalance",
+      "type": "object",
+      "description": "Represents the balance of a specific token for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The token ID."
+        },
+        "tokenId": {
+          "type": "string",
+          "description": "The token ID."
+        },
+        "balance": {
+          "type": "number",
+          "description": "The current balance of this token."
+        }
+      },
+      "required": [
+        "id",
+        "tokenId",
+        "balance"
+      ]
+    },
     "Account": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Account",
@@ -200,6 +225,26 @@
         }
       },
       {
+        "path": "/user_profiles/{userProfileId}/balances/{tokenId}",
+        "definition": {
+          "entityName": "TokenBalance",
+          "schema": {
+            "$ref": "#/backend/entities/TokenBalance"
+          },
+          "description": "Stores individual token balances for a user profile.",
+          "params": [
+            {
+              "name": "userProfileId",
+              "description": "The unique ID of the user profile."
+            },
+            {
+              "name": "tokenId",
+              "description": "The unique ID of the token."
+            }
+          ]
+        }
+      },
+      {
         "path": "/accounts/{accountId}",
         "definition": {
           "entityName": "Account",
@@ -255,7 +300,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, following the principles of Authorization Independence, Clarity of Intent, DBAC, and QAPs. It uses Structural Segregation to ensure homogeneous security postures and Access Modeling to standardize authorization patterns.\n\n1.  **User Profiles:** User profiles are stored in a collection `/user_profiles/{userProfileId}`. This allows direct access to profile information based on the `userProfileId`. Since UserProfile is considered private data and to achieve Authorization Independence, access is path-based using the `request.auth.uid`. Because of the 1:1 relationship with Account, `userProfileId` is the same as `request.auth.uid`.\n2.  **Accounts:** Accounts are stored in `/accounts/{accountId}`. This collection stores data related to a specific account. The `userProfileId` is denormalized in the Account document. This ensures authorization independence as the rule for the account does not rely on a `get()` call to the UserProfile.\n3.  **Transactions:** Transactions are stored as a subcollection of accounts at `/accounts/{accountId}/transactions/{transactionId}`. This allows efficient querying of transactions associated with a specific account. `accountId` is denormalized in the Transaction document. This maintains Authorization Independence because the rule can directly verify the account without needing parent document data.\n4.  **Recipients:** Recipients are stored as a subcollection of user profiles at `/user_profiles/{userProfileId}/recipients/{recipientId}`. This allows users to manage their recipients list. `userProfileId` is denormalized in the Recipient document to enforce authorization independence, meaning that the rules do not need to fetch the parent `user_profile` document to enforce recipient level authorization.\n\nThis structure ensures Authorization Independence by denormalizing authorization attributes (e.g., `userProfileId` in Account, Transaction, and Recipient documents). This avoids the need for `get()` calls in security rules, simplifying the rules and enabling atomic operations. Structural Segregation is achieved by storing different data types (profiles, accounts, transactions, recipients) in separate collections or subcollections, each with its specific security requirements. Access Modeling leverages path-based ownership (`/user_profiles/{userProfileId}`) and subcollections (`/accounts/{accountId}/transactions/{transactionId}`) to clearly define ownership and access rights."
+    ]
   }
 }

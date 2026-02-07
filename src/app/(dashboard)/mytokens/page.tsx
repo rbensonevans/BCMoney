@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useMemo } from "react"
@@ -14,8 +15,8 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Award, ArrowDownLeft, ArrowUpRight, Send, Repeat, History, Loader2 } from "lucide-react"
-import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
-import { doc } from "firebase/firestore"
+import { useUser, useFirebase, useDoc, useCollection, useMemoFirebase } from "@/firebase"
+import { doc, collection } from "firebase/firestore"
 import { TOP_30_TOKENS } from "@/lib/market-data"
 
 // Helper component for token icons
@@ -414,17 +415,30 @@ export default function MyTokensPage() {
     return doc(firestore, 'user_profiles', user.uid);
   }, [firestore, user]);
 
-  const { data: profileData, isLoading } = useDoc(profileRef);
+  const balancesRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'user_profiles', user.uid, 'balances');
+  }, [firestore, user]);
+
+  const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
+  const { data: balancesData, isLoading: isBalancesLoading } = useCollection(balancesRef);
   
   const ownedTokensList = useMemo(() => {
     const ownedIds = profileData?.ownedTokens || [];
-    return TOP_30_TOKENS.filter(t => ownedIds.includes(t.id)).map(t => ({
-      ...t,
-      balance: ownedIds.indexOf(t.id) % 2 === 0 ? 0.5 : 1250.0 
-    }));
-  }, [profileData]);
+    const balances = balancesData || [];
 
-  if (isLoading) {
+    return TOP_30_TOKENS
+      .filter(t => ownedIds.includes(t.id))
+      .map(t => {
+        const balanceDoc = balances.find(b => b.tokenId === t.id);
+        return {
+          ...t,
+          balance: balanceDoc ? balanceDoc.balance : 0
+        };
+      });
+  }, [profileData, balancesData]);
+
+  if (isProfileLoading || isBalancesLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

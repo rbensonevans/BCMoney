@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -461,14 +462,23 @@ export default function DashboardPage() {
   }
 
   const addToMyTokens = (tokenId: string, tokenName: string) => {
-    if (!profileRef || !user || ownedTokens.includes(tokenId)) return;
+    if (!profileRef || !user || !firestore || ownedTokens.includes(tokenId)) return;
 
     const newOwnedTokens = [...ownedTokens, tokenId];
 
+    // Update profile owned tokens list
     setDocumentNonBlocking(profileRef, { 
       ownedTokens: newOwnedTokens,
       id: user.uid,
       email: user.email || ""
+    }, { merge: true });
+
+    // Initialize balance in subcollection
+    const balanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
+    setDocumentNonBlocking(balanceRef, {
+      id: tokenId,
+      tokenId: tokenId,
+      balance: 100.0 // Give a default starting balance for demonstration
     }, { merge: true });
 
     toast({
