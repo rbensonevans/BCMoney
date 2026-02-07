@@ -234,16 +234,6 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
-  if (token.symbol === 'NEAR') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#00FFA3"/>
-          <path d="M21.5 10H17.5L10.5 20.5V10H7V22H11L18 11.5V22H21.5V10Z" fill="black"/>
-        </svg>
-      </div>
-    )
-  }
   if (token.symbol === 'BCH') {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
@@ -299,6 +289,19 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
         <Image 
           src="https://s2.coinmarketcap.com/static/img/coins/64x64/20396.png" 
           alt="KAS" 
+          width={size} 
+          height={size} 
+          className="object-cover"
+        />
+      </div>
+    )
+  }
+  if (token.symbol === 'PEPE') {
+    return (
+      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
+        <Image 
+          src="https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png" 
+          alt="PEPE" 
           width={size} 
           height={size} 
           className="object-cover"
