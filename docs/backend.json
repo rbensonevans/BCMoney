@@ -224,13 +224,7 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user profile information. The 'userProfileId' MUST match the Firebase auth 'uid'.",
-          "params": [
-            {
-              "name": "userProfileId",
-              "description": "The unique ID of the user profile, matching the Firebase auth 'uid'."
-            }
-          ]
+          "description": "Stores user profile information. The 'userProfileId' MUST match the Firebase auth 'uid'."
         }
       },
       {
@@ -240,17 +234,7 @@
           "schema": {
             "$ref": "#/backend/entities/TokenBalance"
           },
-          "description": "Stores individual token balances for a user profile.",
-          "params": [
-            {
-              "name": "userProfileId",
-              "description": "The unique ID of the user profile."
-            },
-            {
-              "name": "tokenId",
-              "description": "The unique ID of the token."
-            }
-          ]
+          "description": "Stores individual token balances for a user profile."
         }
       },
       {
@@ -260,13 +244,7 @@
           "schema": {
             "$ref": "#/backend/entities/Account"
           },
-          "description": "Stores user account information.",
-          "params": [
-            {
-              "name": "accountId",
-              "description": "The unique ID of the user account."
-            }
-          ]
+          "description": "Stores user account information."
         }
       },
       {
@@ -276,17 +254,7 @@
           "schema": {
             "$ref": "#/backend/entities/Transaction"
           },
-          "description": "Stores transaction history for a specific account.",
-          "params": [
-            {
-              "name": "accountId",
-              "description": "The unique ID of the user account."
-            },
-            {
-              "name": "transactionId",
-              "description": "The unique ID of the transaction."
-            }
-          ]
+          "description": "Stores transaction history for a specific account."
         }
       },
       {
@@ -296,17 +264,7 @@
           "schema": {
             "$ref": "#/backend/entities/Recipient"
           },
-          "description": "Stores recipient information for a specific user.",
-          "params": [
-            {
-              "name": "userProfileId",
-              "description": "The unique ID of the user profile."
-            },
-            {
-              "name": "recipientId",
-              "description": "The unique ID of the recipient."
-            }
-          ]
+          "description": "Stores recipient information for a specific user."
         }
       }
     ]

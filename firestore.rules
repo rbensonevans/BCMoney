@@ -4,46 +4,35 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * DATABASE SECURITY POSTURE AND ARCHITECTURE
-     *
-     * Core Philosophy:
-     * This ruleset implements a strict User-Ownership model. Access to data is gated by the 
-     * relationship between the authenticated user and the specific resource.
-     *
-     * This file has been updated to fix 'Missing or insufficient permissions' errors
-     * for transaction listings.
+     * BCMONEY SECURITY RULES
+     * 
+     * This ruleset implements a strict User-Ownership "Silo" model.
+     * Users have full access (read/write/list) to any document or subcollection
+     * where the top-level document ID matches their Firebase Auth UID.
      */
-
-    // --- HELPER FUNCTIONS ---
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // --- COLLECTION RULES ---
-
-    // Rules for user profiles and their subcollections
+    // SILO: User Profiles
+    // Covers /user_profiles/{uid} and all subcollections like /balances/{id} or /recipients/{id}
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-
-      match /balances/{tokenId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
-
-      match /recipients/{recipientId} {
+      
+      match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // Rules for accounts and their transaction history
-    // We use {userId} as the accountId for simplified mapping
-    match /accounts/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-
-      match /transactions/{transactionId} {
-        // Allow the owner of the account path to read and write transactions
-        // This explicitly supports 'list' operations on the transactions collection
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+    // SILO: Accounts
+    // Covers /accounts/{uid} and all subcollections like /transactions/{id}
+    // This explicitly allows 'list' operations on /accounts/{uid}/transactions
+    match /accounts/{accountId} {
+      allow read, write: if isSignedIn() && request.auth.uid == accountId;
+      
+      match /{allPaths=**} {
+        allow read, write: if isSignedIn() && request.auth.uid == accountId;
       }
     }
   }
