@@ -8,10 +8,7 @@ service cloud.firestore {
      *
      * Core Philosophy:
      * This ruleset implements a strict User-Ownership model. Access to data is gated by the 
-     * relationship between the authenticated user and the specific resource. We prioritize 
-     * "Authorization Independence" by ensuring documents contain the necessary fields (like 
-     * userProfileId) to make security decisions without chaining multiple document lookups 
-     * where possible.
+     * relationship between the authenticated user and the specific resource.
      */
 
     // --- HELPER FUNCTIONS ---
@@ -24,48 +21,35 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
-    function isAccountOwner(accId) {
-      return isSignedIn() && get(/databases/$(database)/documents/accounts/$(accId)).data.userProfileId == request.auth.uid;
-    }
-
     // --- COLLECTION RULES ---
 
     match /user_profiles/{userProfileId} {
       allow get, list: if isOwner(userProfileId);
       allow create: if isOwner(userProfileId) && request.resource.data.id == userProfileId;
-      allow update: if isExistingOwner(userProfileId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userProfileId);
+      allow update: if isOwner(userProfileId) && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userProfileId);
 
       match /balances/{tokenId} {
-        allow get, list: if isOwner(userProfileId);
-        allow create, update: if isOwner(userProfileId);
-        allow delete: if isOwner(userProfileId);
+        allow get, list, create, update, delete: if isOwner(userProfileId);
       }
 
       match /recipients/{recipientId} {
-        allow get, list: if isOwner(userProfileId);
-        allow create: if isOwner(userProfileId) && request.resource.data.userProfileId == userProfileId;
-        allow update: if isExistingOwner(userProfileId) && request.resource.data.userProfileId == resource.data.userProfileId;
-        allow delete: if isExistingOwner(userProfileId);
+        allow get, list, create, update, delete: if isOwner(userProfileId);
       }
     }
 
     match /accounts/{accountId} {
-      allow get: if isSignedIn() && resource.data.userProfileId == request.auth.uid;
+      // Allow access if the document ID matches the user's UID or the internal userProfileId matches
+      allow get, create, update, delete: if isSignedIn() && (
+        accountId == request.auth.uid || 
+        (resource != null && resource.data.userProfileId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.userProfileId == request.auth.uid)
+      );
       allow list: if false; 
-      allow create: if isSignedIn() && request.resource.data.userProfileId == request.auth.uid;
-      allow update: if isSignedIn() && resource != null && resource.data.userProfileId == request.auth.uid && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isSignedIn() && resource != null && resource.data.userProfileId == request.auth.uid;
 
       match /transactions/{transactionId} {
-        allow get, list: if isAccountOwner(accountId);
-        allow create: if isAccountOwner(accountId) && request.resource.data.accountId == accountId;
-        allow update: if isAccountOwner(accountId) && request.resource.data.accountId == resource.data.accountId;
-        allow delete: if isAccountOwner(accountId);
+        // Allow the account owner (matched by path ID) to manage their own transactions
+        allow get, list, create, update, delete: if isSignedIn() && accountId == request.auth.uid;
       }
     }
   }
