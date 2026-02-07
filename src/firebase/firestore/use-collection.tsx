@@ -61,18 +61,20 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (err: FirestoreError) => {
-        // Safe path extraction to prevent SDK Internal Assertion errors
+        // Safe path extraction to prevent SDK Internal Assertion errors during failure states
         let path = 'collection-query';
         try {
-          // Attempt to get path from reference or query safely
-          if ('path' in memoizedTargetRefOrQuery) {
-             path = (memoizedTargetRefOrQuery as any).path;
-          } else if ('_query' in memoizedTargetRefOrQuery) {
-             // Deeply internal fallback, wrapped in try-catch to avoid assertion errors
-             path = (memoizedTargetRefOrQuery as any)._query.path.canonicalString() || 'filtered-collection-query';
+          if (memoizedTargetRefOrQuery) {
+            // CollectionReference has a direct .path property
+            if ('path' in memoizedTargetRefOrQuery) {
+              path = (memoizedTargetRefOrQuery as any).path;
+            } else if ((memoizedTargetRefOrQuery as any)._query?.path) {
+              // Internal fallback for Query objects, wrapped in safety
+              path = (memoizedTargetRefOrQuery as any)._query.path.canonicalString();
+            }
           }
         } catch (e) {
-          path = 'unknown-collection-path';
+          path = 'filtered-collection-query';
         }
 
         const contextualError = new FirestorePermissionError({
@@ -84,7 +86,7 @@ export function useCollection<T = any>(
         setData(null);
         setIsLoading(false);
 
-        // Trigger global error propagation
+        // Trigger global error propagation to the dev overlay
         errorEmitter.emit('permission-error', contextualError);
       }
     );
