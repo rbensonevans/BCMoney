@@ -59,20 +59,18 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (err: FirestoreError) => {
-        // Safe path extraction to prevent SDK Internal Assertion errors during failure states
-        let path = 'collection-query';
+        // Safe path extraction to prevent SDK Internal Assertion errors
+        let path = 'collection-request';
         try {
           if (memoizedTargetRefOrQuery) {
-            // Use path if available (CollectionReference)
             if ('path' in memoizedTargetRefOrQuery) {
               path = (memoizedTargetRefOrQuery as any).path;
             } else {
-              // For Queries, we can't safely access internal paths, so use a descriptive placeholder
-              path = 'filtered-query-request';
+              path = 'filtered-collection-query';
             }
           }
         } catch (e) {
-          path = 'error-resolving-path';
+          path = 'unknown-path';
         }
 
         const contextualError = new FirestorePermissionError({

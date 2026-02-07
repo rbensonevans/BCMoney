@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils"
 import { useUser, useFirebase, useCollection, useDoc, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, where, getDocs, doc, writeBatch } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
-import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function TransactionsPage() {
   const { user } = useUser()
@@ -38,13 +37,13 @@ export default function TransactionsPage() {
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
 
-  // 2. Setup Transactions Reference - Only if profile exists
+  // 2. Setup Transactions Reference - Only if profile exists to ensure user silo is ready
   const transactionsRef = useMemoFirebase(() => {
     if (!firestore || !user || !profileData) return null;
     return collection(firestore, 'accounts', user.uid, 'transactions');
   }, [firestore, user, profileData]);
 
-  // 3. Setup Query
+  // 3. Setup real-time Query for the selected token
   const transactionsQuery = useMemoFirebase(() => {
     if (!transactionsRef) return null;
     return query(
@@ -61,6 +60,7 @@ export default function TransactionsPage() {
     
     setIsClearing(true);
     try {
+      // Get all transactions for this token specifically to clear
       const q = query(transactionsRef, where('tokenSymbol', '==', token));
       const snapshot = await getDocs(q);
       
@@ -76,13 +76,13 @@ export default function TransactionsPage() {
       
       toast({
         title: "History Cleared",
-        description: `All ${token} transactions have been removed.`,
+        description: `All ${token} transactions have been permanently removed from Firestore.`,
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Clear Failed",
-        description: "Could not clear history. Please try again.",
+        description: "Could not clear history from Firestore. " + error.message,
       });
     } finally {
       setIsClearing(false);
@@ -101,9 +101,10 @@ export default function TransactionsPage() {
         { amount: -0.5, type: 'withdrawal', date: new Date().toISOString(), recipient: '0x123...abc' },
       ];
 
+      const batch = writeBatch(firestore);
       for (const sample of samples) {
         const newDocRef = doc(transactionsRef);
-        setDocumentNonBlocking(newDocRef, {
+        batch.set(newDocRef, {
           id: newDocRef.id,
           accountId: user.uid,
           transactionDate: sample.date,
@@ -111,12 +112,13 @@ export default function TransactionsPage() {
           transactionType: sample.type,
           tokenSymbol: token,
           recipientAccountId: sample.recipient || null
-        }, { merge: true });
+        });
       }
+      await batch.commit();
 
       toast({
         title: "Sample Data Seeded",
-        description: `Generated ${samples.length} sample transactions for ${token}.`,
+        description: `Successfully added ${samples.length} real transaction records to your ${token} collection.`,
       });
     } catch (error: any) {
       toast({
@@ -129,7 +131,8 @@ export default function TransactionsPage() {
     }
   };
 
-  const isLoading = isProfileLoading || (isTxnLoading && !!profileData);
+  // Logic to show loading state only when we actually expect data but don't have it yet
+  const showLoading = isProfileLoading || (isTxnLoading && !!profileData);
 
   return (
     <div className="space-y-6">
@@ -143,7 +146,7 @@ export default function TransactionsPage() {
           <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
             <History className="h-8 w-8" /> Transactions
           </h1>
-          <p className="text-muted-foreground">Historical activity for your {token} wallet</p>
+          <p className="text-muted-foreground">Live transaction history for your {token} wallet</p>
         </div>
         
         <div className="flex gap-2">
@@ -152,7 +155,7 @@ export default function TransactionsPage() {
             size="sm" 
             className="text-primary border-primary/20 hover:bg-primary/10"
             onClick={handleSeedHistory}
-            disabled={isSeeding || isLoading}
+            disabled={isSeeding || showLoading}
           >
             {isSeeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
             Seed Samples
@@ -175,15 +178,15 @@ export default function TransactionsPage() {
       <Card className="shadow-sm border-none">
         <CardHeader>
           <CardTitle>{token} History</CardTitle>
-          <CardDescription>A list of your recent {token} movements</CardDescription>
+          <CardDescription>Real-time updates from your private financial layer</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {showLoading ? (
             <div className="flex items-center justify-center h-48">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
@@ -199,14 +202,14 @@ export default function TransactionsPage() {
                       <TableCell colSpan={4} className="h-48 text-center text-muted-foreground">
                         <div className="flex flex-col items-center gap-2">
                           <History className="h-8 w-8 opacity-20" />
-                          <p>No transactions found for {token}.</p>
-                          <p className="text-xs">Click "Seed Samples" to populate some test data.</p>
+                          <p className="font-semibold text-lg">No history found</p>
+                          <p className="text-sm">Start by sending funds or click "Seed Samples" to test the UI.</p>
                         </div>
                       </TableCell>
                     </TableRow>
                   ) : (
                     transactions.map((tx) => (
-                      <TableRow key={tx.id}>
+                      <TableRow key={tx.id} className="hover:bg-muted/20 transition-colors">
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <div className={cn(
@@ -221,7 +224,7 @@ export default function TransactionsPage() {
                               {tx.transactionType === 'send' && <Send className="h-3 w-3" />}
                               {tx.transactionType === 'trade' && <Repeat className="h-3 w-3" />}
                             </div>
-                            <span className="capitalize text-sm font-medium">{tx.transactionType}</span>
+                            <span className="capitalize text-sm font-semibold">{tx.transactionType}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
@@ -234,8 +237,8 @@ export default function TransactionsPage() {
                           {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString()} {token}
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className="px-2 py-0.5 rounded-full bg-muted text-[10px] font-bold uppercase">
-                            completed
+                          <span className="px-2 py-0.5 rounded-full bg-muted text-[10px] font-bold uppercase tracking-tight">
+                            confirmed
                           </span>
                         </TableCell>
                       </TableRow>

@@ -10,14 +10,6 @@ service cloud.firestore {
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Explicit rules for listing subcollections
-      match /balances/{tokenId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
-      match /recipients/{recipientId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
-      
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
@@ -26,11 +18,6 @@ service cloud.firestore {
     // Account Silo - Recursive access to account and transactions
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      // Explicit rule for listing transactions
-      match /transactions/{transactionId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
       
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
