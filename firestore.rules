@@ -6,24 +6,20 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // User Profile Silo
+    // User Profile Silo - Recursive access to profile, balances, and recipients
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      match /balances/{tokenId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
-      
-      match /recipients/{recipientId} {
+      match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // Account Silo
+    // Account Silo - Recursive access to account and transactions
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      match /transactions/{transactionId} {
+      match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }

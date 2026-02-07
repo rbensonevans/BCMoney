@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -16,7 +17,7 @@ import {
 import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft, Loader2, Trash2, Database } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser, useFirebase, useCollection, useDoc, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where, getDocs, deleteDoc, doc, writeBatch } from "firebase/firestore"
+import { collection, query, orderBy, where, getDocs, doc, writeBatch } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
@@ -115,7 +116,7 @@ export default function TransactionsPage() {
 
       toast({
         title: "Sample Data Seeded",
-        description: `Generated 4 sample transactions for ${token}.`,
+        description: `Generated ${samples.length} sample transactions for ${token}.`,
       });
     } catch (error: any) {
       toast({
