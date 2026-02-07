@@ -6,34 +6,35 @@ service cloud.firestore {
     /**
      * BCMONEY SECURITY RULES
      * 
-     * This ruleset implements a strict User-Ownership "Silo" model.
-     * Users have full access (read/write/list) to any document or subcollection
-     * where the top-level document ID matches their Firebase Auth UID.
+     * Implements a strict User-Ownership Silo model.
+     * Access is granted to any path starting with /collection/{userId}/...
+     * where {userId} matches the authenticated user's UID.
      */
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // SILO: User Profiles
-    // Covers /user_profiles/{uid} and all subcollections like /balances/{id} or /recipients/{id}
+    // Silo: User Profiles
+    // Matches the profile document itself
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      match /{allPaths=**} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
+    }
+    
+    // Matches any subcollection under a user profile (balances, recipients, etc.)
+    match /user_profiles/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // SILO: Accounts
-    // Covers /accounts/{uid} and all subcollections like /transactions/{id}
-    // This explicitly allows 'list' operations on /accounts/{uid}/transactions
-    match /accounts/{accountId} {
-      allow read, write: if isSignedIn() && request.auth.uid == accountId;
-      
-      match /{allPaths=**} {
-        allow read, write: if isSignedIn() && request.auth.uid == accountId;
-      }
+    // Silo: Accounts
+    // Matches the account document itself
+    match /accounts/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Matches any subcollection under an account (transactions, etc.)
+    match /accounts/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
   }
 }
