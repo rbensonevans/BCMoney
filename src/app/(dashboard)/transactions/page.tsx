@@ -1,9 +1,8 @@
-
 "use client"
 
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -14,22 +13,33 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft, Loader2 } from "lucide-react"
+import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft, Loader2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useUser, useFirebase, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where } from "firebase/firestore"
+import { useUser, useFirebase, useCollection, useDoc, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, where, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { useToast } from "@/hooks/use-toast"
 
 export default function TransactionsPage() {
   const { user } = useUser()
   const { firestore } = useFirebase()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') || 'BTC'
+  const { toast } = useToast()
+  const [isClearing, setIsClearing] = useState(false)
+
+  // Check if profile exists before retrieving transactions
+  const profileRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'user_profiles', user.uid);
+  }, [firestore, user]);
+
+  const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
 
   // Using the user's UID as the account ID for this MVP
   const transactionsRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!firestore || !user || !profileData) return null;
     return collection(firestore, 'accounts', user.uid, 'transactions');
-  }, [firestore, user]);
+  }, [firestore, user, profileData]);
 
   const transactionsQuery = useMemoFirebase(() => {
     if (!transactionsRef) return null;
@@ -40,20 +50,63 @@ export default function TransactionsPage() {
     );
   }, [transactionsRef, token]);
 
-  const { data: transactions, isLoading } = useCollection(transactionsQuery);
+  const { data: transactions, isLoading: isTxnLoading } = useCollection(transactionsQuery);
+
+  const handleClearHistory = async () => {
+    if (!transactionsRef) return;
+    
+    setIsClearing(true);
+    try {
+      const q = query(transactionsRef, where('tokenSymbol', '==', token));
+      const snapshot = await getDocs(q);
+      
+      const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
+      await Promise.all(deletePromises);
+      
+      toast({
+        title: "History Cleared",
+        description: `All ${token} transactions have been removed.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Clear Failed",
+        description: error.message,
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const isLoading = isProfileLoading || isTxnLoading;
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Button variant="ghost" asChild className="p-0 h-auto mb-2 text-muted-foreground hover:text-primary">
-          <Link href="/mytokens" className="flex items-center gap-1 text-xs">
-            <ArrowLeft className="h-3 w-3" /> Back to MyTokens
-          </Link>
-        </Button>
-        <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
-          <History className="h-8 w-8" /> Transactions
-        </h1>
-        <p className="text-muted-foreground">Historical activity for your {token} wallet</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-2">
+          <Button variant="ghost" asChild className="p-0 h-auto mb-2 text-muted-foreground hover:text-primary">
+            <Link href="/mytokens" className="flex items-center gap-1 text-xs">
+              <ArrowLeft className="h-3 w-3" /> Back to MyTokens
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
+            <History className="h-8 w-8" /> Transactions
+          </h1>
+          <p className="text-muted-foreground">Historical activity for your {token} wallet</p>
+        </div>
+        
+        {transactions && transactions.length > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-destructive border-destructive/20 hover:bg-destructive/10"
+            onClick={handleClearHistory}
+            disabled={isClearing}
+          >
+            {isClearing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+            Clear {token} History
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-sm border-none">

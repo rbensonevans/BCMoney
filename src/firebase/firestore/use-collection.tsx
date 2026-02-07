@@ -65,16 +65,15 @@ export function useCollection<T = any>(
         let path = 'collection-query';
         try {
           if (memoizedTargetRefOrQuery) {
-            // CollectionReference has a direct .path property
             if ('path' in memoizedTargetRefOrQuery) {
               path = (memoizedTargetRefOrQuery as any).path;
-            } else if ((memoizedTargetRefOrQuery as any)._query?.path) {
-              // Internal fallback for Query objects, wrapped in safety
-              path = (memoizedTargetRefOrQuery as any)._query.path.canonicalString();
+            } else {
+              // Safe fallback for query objects
+              path = 'filtered-collection-query';
             }
           }
         } catch (e) {
-          path = 'filtered-collection-query';
+          path = 'error-resolving-path';
         }
 
         const contextualError = new FirestorePermissionError({

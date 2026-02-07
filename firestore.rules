@@ -15,7 +15,7 @@ service cloud.firestore {
     }
 
     // Silo: User Profiles
-    // Explicitly allow the profile document and all sub-resources (balances, recipients, etc.)
+    // Matches the profile document AND all sub-resources (balances, recipients, etc.)
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
@@ -24,7 +24,7 @@ service cloud.firestore {
     }
 
     // Silo: Accounts
-    // Explicitly allow the account document and all sub-resources (transactions)
+    // Matches the account document AND all sub-resources (transactions)
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
