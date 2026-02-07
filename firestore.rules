@@ -5,7 +5,7 @@ service cloud.firestore {
     /**
      * BCMONEY SECURITY RULES
      * 
-     * Implements a strict User-Ownership Silo model.
+     * Implements a robust User-Ownership Silo model.
      * Access is granted to any path starting with /collection/{userId}/...
      * where {userId} matches the authenticated user's UID.
      */
@@ -14,33 +14,33 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Helper to verify ownership of a silo
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     // Silo: User Profiles
+    // Matches /user_profiles/{userId} and all sub-resources (balances, recipients)
     match /user_profiles/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      // Explicitly allow all subcollections (balances, recipients, etc.)
+      allow read, write: if isOwner(userId);
       match /{allPaths=**} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        allow read, write: if isOwner(userId);
       }
     }
 
     // Silo: Accounts
+    // Matches /accounts/{userId} and all sub-resources (transactions)
     match /accounts/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
-    // Explicitly allow listing and managing transactions for the owner
+    // Explicitly allow listing the transactions collection for the owner
+    // This provides a fallback for collection-group-like list operations
     match /accounts/{userId}/transactions {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-    }
-
-    match /accounts/{userId}/transactions/{transactionId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-    }
-
-    // Catch-all for other subcollections under accounts
-    match /accounts/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
   }
 }

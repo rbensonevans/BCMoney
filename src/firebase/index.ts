@@ -1,4 +1,3 @@
-
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -32,6 +31,7 @@ export function initializeFirebase() {
     }
   }
 
+  // Ensure Auth and Firestore are tied to the shared app instance
   if (!memoizedAuth) memoizedAuth = getAuth(memoizedApp);
   if (!memoizedFirestore) memoizedFirestore = getFirestore(memoizedApp);
 

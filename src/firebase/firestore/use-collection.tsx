@@ -17,7 +17,7 @@ export type WithId<T> = T & { id: string };
 
 /**
  * Interface for the return value of the useCollection hook.
- * @template T Type of the document data.
+ * @template T Type of T the document data.
  */
 export interface UseCollectionResult<T> {
   data: WithId<T>[] | null; // Document data with ID, or null.
@@ -61,17 +61,17 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (err: FirestoreError) => {
-        // Safe path extraction using public SDK properties only
+        // Safe path extraction using only public SDK properties.
+        // Queries do not expose .path publicly, so we use a descriptive placeholder.
         let path = 'unknown-path';
         try {
-          if ('path' in memoizedTargetRefOrQuery) {
+          if (memoizedTargetRefOrQuery && 'path' in memoizedTargetRefOrQuery) {
             path = (memoizedTargetRefOrQuery as any).path;
           } else {
-            // For Query objects, we avoid private properties but identify the operation
             path = 'filtered-collection-query';
           }
         } catch (e) {
-          path = 'error-extracting-path';
+          path = 'error-reporting-path';
         }
 
         const contextualError = new FirestorePermissionError({
