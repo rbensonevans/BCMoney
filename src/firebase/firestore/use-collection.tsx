@@ -62,11 +62,15 @@ export function useCollection<T = any>(
       },
       (err: FirestoreError) => {
         // Safe path extraction to avoid SDK Internal Assertion failures.
-        // We avoid reaching into private properties of Query objects.
+        // Queries in the JS SDK don't have a public 'path' property,
+        // so we try several common internal locations or fallback gracefully.
         let path = 'collection-query';
         try {
-          if (memoizedTargetRefOrQuery && 'path' in memoizedTargetRefOrQuery) {
-            path = (memoizedTargetRefOrQuery as any).path;
+          const internalRef = memoizedTargetRefOrQuery as any;
+          if (internalRef.path) {
+            path = internalRef.path.toString();
+          } else if (internalRef._query && internalRef._query.path) {
+            path = internalRef._query.path.toString();
           }
         } catch (e) {
           path = 'unknown-query-path';
