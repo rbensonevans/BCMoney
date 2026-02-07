@@ -473,12 +473,19 @@ export default function DashboardPage() {
       email: user.email || ""
     }, { merge: true });
 
+    // Special case for testing: 10 BTC for @rbensonevans
+    let initialBalance = 100.0;
+    const tokenSymbol = TOP_30_TOKENS.find(t => t.id === tokenId)?.symbol;
+    if (tokenSymbol === 'BTC' && profileData?.uniqueName === '@rbensonevans') {
+      initialBalance = 10.0;
+    }
+
     // Initialize balance in subcollection
     const balanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
     setDocumentNonBlocking(balanceRef, {
       id: tokenId,
       tokenId: tokenId,
-      balance: 100.0 // Give a default starting balance for demonstration
+      balance: initialBalance
     }, { merge: true });
 
     toast({

@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Camera, Save, User, MapPin, Phone, Mail, Fingerprint, Trash2, AlertTriangle, Loader2 } from "lucide-react"
+import { Camera, Save, User, MapPin, Phone, Mail, Fingerprint, Trash2, AlertTriangle, Loader2, Database } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection, getDocs, deleteDoc } from "firebase/firestore"
-import { setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { signOut } from "firebase/auth"
 
 export default function ProfilePage() {
@@ -71,6 +71,35 @@ export default function ProfilePage() {
     })
   }
 
+  const handleSeedTestData = () => {
+    if (!profileRef || !user || !firestore) return;
+    
+    // '1' is the ID for BTC in TOP_30_TOKENS
+    const btcId = '1';
+    const updatedOwnedTokens = Array.from(new Set([...(profileData?.ownedTokens || []), btcId]));
+    
+    // 1. Update Profile with handle and owned tokens
+    setDocumentNonBlocking(profileRef, {
+      uniqueName: "@rbensonevans",
+      ownedTokens: updatedOwnedTokens,
+      id: user.uid,
+      email: user.email || ""
+    }, { merge: true });
+
+    // 2. Set BTC Balance to 10 in subcollection
+    const btcBalanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', btcId);
+    setDocumentNonBlocking(btcBalanceRef, {
+      id: btcId,
+      tokenId: btcId,
+      balance: 10
+    }, { merge: true });
+
+    toast({
+      title: "Test Data Seeded",
+      description: "Account handle set to @rbensonevans and 10 BTC added to MyTokens.",
+    })
+  }
+
   const handleResetData = async () => {
     if (!user || !firestore || !auth) return;
     
@@ -82,17 +111,23 @@ export default function ProfilePage() {
       const deletePromises = recipientsSnap.docs.map(d => deleteDoc(d.ref));
       await Promise.all(deletePromises);
 
-      // 2. Delete the profile document
+      // 2. Delete all balances
+      const balancesRef = collection(firestore, 'user_profiles', user.uid, 'balances');
+      const balancesSnap = await getDocs(balancesRef);
+      const balanceDeletePromises = balancesSnap.docs.map(d => deleteDoc(d.ref));
+      await Promise.all(balanceDeletePromises);
+
+      // 3. Delete the profile document
       if (profileRef) {
         await deleteDoc(profileRef);
       }
 
       toast({
         title: "Data Cleared",
-        description: "Your profile and recipients have been deleted. Logging out...",
+        description: "Your profile, balances, and recipients have been deleted. Logging out...",
       })
 
-      // 3. Log out and redirect
+      // 4. Log out and redirect
       setTimeout(async () => {
         await signOut(auth);
         router.push("/");
@@ -157,6 +192,27 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-primary">
+                <Database className="h-4 w-4" /> Test Utilities
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Set up a test account with the handle <strong>@rbensonevans</strong> and 10 BTC.
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full gap-2 text-primary border-primary/20" 
+                onClick={handleSeedTestData}
+              >
+                Seed Test Data
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="border-destructive/20 shadow-sm bg-destructive/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2 text-destructive">
@@ -165,7 +221,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Clearing your data will permanently delete your profile information and your saved recipients.
+                Clearing your data will permanently delete your profile, balances, and recipients.
               </p>
               <Button 
                 variant="destructive" 
