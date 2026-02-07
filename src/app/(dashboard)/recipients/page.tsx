@@ -6,36 +6,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Trash2, UserPlus, Heart, Users, Globe, Search } from "lucide-react"
+import { Plus, Trash2, Heart, Users, Globe, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-
-type Recipient = {
-  id: string
-  name: string
-  handle: string
-  category: 'family' | 'friends' | 'general'
-}
+import { useUser, useFirebase, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, doc } from "firebase/firestore"
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function RecipientsPage() {
   const { toast } = useToast()
-  const [recipients, setRecipients] = useState<Recipient[]>([
-    { id: '1', name: "Jane Doe", handle: "@jane_mom", category: 'family' },
-    { id: '2', name: "Dave Smith", handle: "@davey", category: 'friends' },
-    { id: '3', name: "Amazon Marketplace", handle: "@amazon", category: 'general' },
-  ])
+  const { user } = useUser()
+  const { firestore } = useFirebase()
+
   const [newName, setNewName] = useState("")
   const [newHandle, setNewHandle] = useState("")
 
-  const addRecipient = (category: Recipient['category']) => {
-    if (!newName || !newHandle) return
-    const newRec: Recipient = {
-      id: Date.now().toString(),
+  const recipientsRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'user_profiles', user.uid, 'recipients');
+  }, [firestore, user]);
+
+  const { data: recipients, isLoading } = useCollection(recipientsRef);
+
+  const addRecipient = (category: 'family' | 'friends' | 'general') => {
+    if (!newName || !newHandle || !recipientsRef || !user) return
+    
+    const handle = newHandle.startsWith("@") ? newHandle : `@${newHandle}`
+    
+    addDocumentNonBlocking(recipientsRef, {
       name: newName,
-      handle: newHandle.startsWith("@") ? newHandle : `@${newHandle}`,
-      category
-    }
-    setRecipients([...recipients, newRec])
+      ethereumAddress: handle, // using handle for P2P simplicity
+      listType: category,
+      userProfileId: user.uid
+    });
+
     setNewName("")
     setNewHandle("")
     toast({
@@ -45,18 +49,29 @@ export default function RecipientsPage() {
   }
 
   const deleteRecipient = (id: string) => {
-    setRecipients(recipients.filter(r => r.id !== id))
+    if (!recipientsRef) return;
+    const docRef = doc(recipientsRef, id);
+    deleteDocumentNonBlocking(docRef);
     toast({
       title: "Recipient Deleted",
       variant: "destructive"
     })
   }
 
-  const ListContent = ({ category }: { category: Recipient['category'] }) => {
-    const list = recipients.filter(r => r.category === category)
+  const ListContent = ({ category }: { category: 'family' | 'friends' | 'general' }) => {
+    const list = recipients?.filter(r => r.listType === category) || []
+    
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )
+    }
+
     return (
       <div className="space-y-4 pt-4">
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Input 
             placeholder="Full Name" 
             value={newName} 
@@ -69,7 +84,7 @@ export default function RecipientsPage() {
             onChange={(e) => setNewHandle(e.target.value)}
             className="flex-1"
           />
-          <Button onClick={() => addRecipient(category)} className="bg-secondary">
+          <Button onClick={() => addRecipient(category)} className="bg-secondary shrink-0">
             <Plus className="h-4 w-4 mr-1" /> Add
           </Button>
         </div>
@@ -83,12 +98,12 @@ export default function RecipientsPage() {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-muted text-primary font-bold">
-                      {r.name.split(' ').map(n => n[0]).join('')}
+                      {r.name.split(' ').map((n: string) => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-bold">{r.name}</p>
-                    <p className="text-xs text-secondary">{r.handle}</p>
+                    <p className="text-xs text-secondary">{r.ethereumAddress}</p>
                   </div>
                 </div>
                 <div className="flex gap-1">
