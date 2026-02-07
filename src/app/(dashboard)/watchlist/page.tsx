@@ -322,6 +322,19 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
+  if (token.symbol === 'ATOM') {
+    return (
+      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
+        <Image 
+          src="https://s2.coinmarketcap.com/static/img/coins/64x64/3794.png" 
+          alt="ATOM" 
+          width={size} 
+          height={size} 
+          className="object-cover"
+        />
+      </div>
+    )
+  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
