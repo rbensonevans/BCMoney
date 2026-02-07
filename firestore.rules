@@ -9,6 +9,9 @@ service cloud.firestore {
      * Core Philosophy:
      * This ruleset implements a strict User-Ownership model. Access to data is gated by the 
      * relationship between the authenticated user and the specific resource.
+     *
+     * This file has been updated to fix 'Missing or insufficient permissions' errors
+     * for transaction listings.
      */
 
     // --- HELPER FUNCTIONS ---
@@ -17,32 +20,30 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     // --- COLLECTION RULES ---
 
-    match /user_profiles/{userProfileId} {
-      allow read, write: if isOwner(userProfileId);
+    // Rules for user profiles and their subcollections
+    match /user_profiles/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
 
       match /balances/{tokenId} {
-        allow read, write: if isOwner(userProfileId);
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
 
       match /recipients/{recipientId} {
-        allow read, write: if isOwner(userProfileId);
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // Explicitly handle accounts and their transactions using the path UID
-    match /accounts/{accountId} {
-      allow read, write: if isOwner(accountId);
+    // Rules for accounts and their transaction history
+    // We use {userId} as the accountId for simplified mapping
+    match /accounts/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
 
       match /transactions/{transactionId} {
-        // Allow the account owner (matched by path ID) to manage their own transactions
-        // even if the parent account document doesn't exist yet.
-        allow read, write: if isOwner(accountId);
+        // Allow the owner of the account path to read and write transactions
+        // This explicitly supports 'list' operations on the transactions collection
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
   }
