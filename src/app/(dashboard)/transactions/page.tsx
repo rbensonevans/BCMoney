@@ -13,11 +13,12 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft, Loader2, Trash2 } from "lucide-react"
+import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft, Loader2, Trash2, Database } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser, useFirebase, useCollection, useDoc, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { collection, query, orderBy, where, getDocs, deleteDoc, doc, writeBatch } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function TransactionsPage() {
   const { user } = useUser()
@@ -26,6 +27,7 @@ export default function TransactionsPage() {
   const token = searchParams.get('token') || 'BTC'
   const { toast } = useToast()
   const [isClearing, setIsClearing] = useState(false)
+  const [isSeeding, setIsSeeding] = useState(false)
 
   // 1. Get Profile first to ensure auth context is fully ready
   const profileRef = useMemoFirebase(() => {
@@ -61,8 +63,15 @@ export default function TransactionsPage() {
       const q = query(transactionsRef, where('tokenSymbol', '==', token));
       const snapshot = await getDocs(q);
       
-      const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
-      await Promise.all(deletePromises);
+      if (snapshot.empty) {
+        toast({ title: "History is already empty" });
+        setIsClearing(false);
+        return;
+      }
+
+      const batch = writeBatch(firestore);
+      snapshot.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
       
       toast({
         title: "History Cleared",
@@ -76,6 +85,46 @@ export default function TransactionsPage() {
       });
     } finally {
       setIsClearing(false);
+    }
+  };
+
+  const handleSeedHistory = async () => {
+    if (!transactionsRef || !firestore || !user) return;
+    
+    setIsSeeding(true);
+    try {
+      const samples = [
+        { amount: 1.5, type: 'deposit', date: new Date(Date.now() - 86400000 * 3).toISOString() },
+        { amount: -0.25, type: 'send', date: new Date(Date.now() - 86400000 * 2).toISOString(), recipient: '@alice' },
+        { amount: 0.1, type: 'trade', date: new Date(Date.now() - 86400000 * 1).toISOString() },
+        { amount: -0.5, type: 'withdrawal', date: new Date().toISOString(), recipient: '0x123...abc' },
+      ];
+
+      for (const sample of samples) {
+        const newDocRef = doc(transactionsRef);
+        setDocumentNonBlocking(newDocRef, {
+          id: newDocRef.id,
+          accountId: user.uid,
+          transactionDate: sample.date,
+          amount: sample.amount,
+          transactionType: sample.type,
+          tokenSymbol: token,
+          recipientAccountId: sample.recipient || null
+        }, { merge: true });
+      }
+
+      toast({
+        title: "Sample Data Seeded",
+        description: `Generated 4 sample transactions for ${token}.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Seeding Failed",
+        description: error.message,
+      });
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -96,18 +145,30 @@ export default function TransactionsPage() {
           <p className="text-muted-foreground">Historical activity for your {token} wallet</p>
         </div>
         
-        {transactions && transactions.length > 0 && (
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-destructive border-destructive/20 hover:bg-destructive/10"
-            onClick={handleClearHistory}
-            disabled={isClearing}
+            className="text-primary border-primary/20 hover:bg-primary/10"
+            onClick={handleSeedHistory}
+            disabled={isSeeding || isLoading}
           >
-            {isClearing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-            Clear {token} History
+            {isSeeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
+            Seed Samples
           </Button>
-        )}
+          {transactions && transactions.length > 0 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-destructive border-destructive/20 hover:bg-destructive/10"
+              onClick={handleClearHistory}
+              disabled={isClearing}
+            >
+              {isClearing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Clear {token} History
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card className="shadow-sm border-none">
@@ -138,6 +199,7 @@ export default function TransactionsPage() {
                         <div className="flex flex-col items-center gap-2">
                           <History className="h-8 w-8 opacity-20" />
                           <p>No transactions found for {token}.</p>
+                          <p className="text-xs">Click "Seed Samples" to populate some test data.</p>
                         </div>
                       </TableCell>
                     </TableRow>
