@@ -539,7 +539,12 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <TokenIcon token={token} size={40} />
                         <div>
-                          <p className="font-bold">{token.name}</p>
+                          <Link 
+                            href="/watchlist" 
+                            className="font-bold hover:underline text-primary transition-colors block"
+                          >
+                            {token.name}
+                          </Link>
                           <p className="text-xs text-muted-foreground uppercase">{token.symbol}</p>
                         </div>
                       </div>
@@ -620,6 +625,7 @@ export default function DashboardPage() {
                 ) : (
                   filteredTokens.map((token, index) => {
                     const isOwned = ownedTokens.includes(token.id);
+                    const isOnWatchlist = watchlist.includes(token.id);
                     return (
                       <TableRow key={token.id} className="hover:bg-muted/30 transition-colors">
                         <TableCell className="text-center">
@@ -650,6 +656,13 @@ export default function DashboardPage() {
                                 >
                                   {token.name}
                                 </Link>
+                              ) : isOnWatchlist ? (
+                                <Link 
+                                  href="/watchlist" 
+                                  className="text-sm font-bold hover:underline text-primary transition-colors"
+                                >
+                                  {token.name}
+                                </Link>
                               ) : (
                                 <p className="text-sm font-bold">{token.name}</p>
                               )}
@@ -676,11 +689,11 @@ export default function DashboardPage() {
                             size="icon" 
                             className={cn(
                               "h-8 w-8 transition-colors",
-                              watchlist.includes(token.id) ? "text-yellow-500 hover:text-yellow-600" : "text-muted-foreground hover:text-primary"
+                              isOnWatchlist ? "text-yellow-500 hover:text-yellow-600" : "text-muted-foreground hover:text-primary"
                             )}
                             onClick={() => toggleWatchlist(token.id, token.name)}
                           >
-                            <Star className={cn("h-4 w-4", watchlist.includes(token.id) && "fill-current")} />
+                            <Star className={cn("h-4 w-4", isOnWatchlist && "fill-current")} />
                           </Button>
                         </TableCell>
                       </TableRow>
