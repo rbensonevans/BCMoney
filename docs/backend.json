@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -39,6 +40,20 @@
           "type": "string",
           "description": "URL of the user's profile photo.",
           "format": "uri"
+        },
+        "watchlist": {
+          "type": "array",
+          "description": "List of token IDs the user is tracking.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ownedTokens": {
+          "type": "array",
+          "description": "List of token IDs the user has added to their collection.",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
