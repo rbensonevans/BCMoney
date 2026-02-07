@@ -24,32 +24,25 @@ service cloud.firestore {
     // --- COLLECTION RULES ---
 
     match /user_profiles/{userProfileId} {
-      allow get, list: if isOwner(userProfileId);
-      allow create: if isOwner(userProfileId) && request.resource.data.id == userProfileId;
-      allow update: if isOwner(userProfileId) && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userProfileId);
+      allow read, write: if isOwner(userProfileId);
 
       match /balances/{tokenId} {
-        allow get, list, create, update, delete: if isOwner(userProfileId);
+        allow read, write: if isOwner(userProfileId);
       }
 
       match /recipients/{recipientId} {
-        allow get, list, create, update, delete: if isOwner(userProfileId);
+        allow read, write: if isOwner(userProfileId);
       }
     }
 
+    // Explicitly handle accounts and their transactions using the path UID
     match /accounts/{accountId} {
-      // Allow access if the document ID matches the user's UID or the internal userProfileId matches
-      allow get, create, update, delete: if isSignedIn() && (
-        accountId == request.auth.uid || 
-        (resource != null && resource.data.userProfileId == request.auth.uid) ||
-        (request.resource != null && request.resource.data.userProfileId == request.auth.uid)
-      );
-      allow list: if false; 
+      allow read, write: if isOwner(accountId);
 
       match /transactions/{transactionId} {
         // Allow the account owner (matched by path ID) to manage their own transactions
-        allow get, list, create, update, delete: if isSignedIn() && accountId == request.auth.uid;
+        // even if the parent account document doesn't exist yet.
+        allow read, write: if isOwner(accountId);
       }
     }
   }
