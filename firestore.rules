@@ -28,23 +28,9 @@ service cloud.firestore {
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Explicitly allow access to subcollections like /transactions and /balances
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
-    }
-    
-    // Explicit fallback for queries on nested collections
-    match /accounts/{userId}/transactions/{transactionId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-    }
-    
-    match /user_profiles/{userId}/balances/{balanceId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-    }
-
-    match /user_profiles/{userId}/recipients/{recipientId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
   }
 }

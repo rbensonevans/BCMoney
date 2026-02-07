@@ -61,15 +61,18 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (err: FirestoreError) => {
-        // Safer path extraction to avoid SDK Internal Assertion failures.
+        // Safe path extraction to prevent SDK Internal Assertion errors
         let path = 'collection-query';
         try {
-          // Avoid touching private or complex internal properties during an error state
-          if ((memoizedTargetRefOrQuery as any).path) {
-            path = (memoizedTargetRefOrQuery as any).path;
+          // Attempt to get path from reference or query safely
+          if ('path' in memoizedTargetRefOrQuery) {
+             path = (memoizedTargetRefOrQuery as any).path;
+          } else if ('_query' in memoizedTargetRefOrQuery) {
+             // Deeply internal fallback, wrapped in try-catch to avoid assertion errors
+             path = (memoizedTargetRefOrQuery as any)._query.path.canonicalString() || 'filtered-collection-query';
           }
         } catch (e) {
-          path = 'unknown-query-path';
+          path = 'unknown-collection-path';
         }
 
         const contextualError = new FirestorePermissionError({
