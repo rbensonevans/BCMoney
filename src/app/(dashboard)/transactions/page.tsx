@@ -35,8 +35,9 @@ export default function TransactionsPage() {
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
 
-  // Using the user's UID as the account ID for this MVP
+  // Using the user's UID as the account ID for this silo-based model
   const transactionsRef = useMemoFirebase(() => {
+    // Only proceed if profileData is loaded and user is present
     if (!firestore || !user || !profileData) return null;
     return collection(firestore, 'accounts', user.uid, 'transactions');
   }, [firestore, user, profileData]);
@@ -57,6 +58,7 @@ export default function TransactionsPage() {
     
     setIsClearing(true);
     try {
+      // Get all transactions for this token to delete them
       const q = query(transactionsRef, where('tokenSymbol', '==', token));
       const snapshot = await getDocs(q);
       
@@ -78,7 +80,7 @@ export default function TransactionsPage() {
     }
   };
 
-  const isLoading = isProfileLoading || isTxnLoading;
+  const isLoading = isProfileLoading || (isTxnLoading && !!profileData);
 
   return (
     <div className="space-y-6">

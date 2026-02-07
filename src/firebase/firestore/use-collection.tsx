@@ -68,7 +68,7 @@ export function useCollection<T = any>(
             if ('path' in memoizedTargetRefOrQuery) {
               path = (memoizedTargetRefOrQuery as any).path;
             } else {
-              // Safe fallback for query objects
+              // Safe fallback for query objects to avoid accessing private internals
               path = 'filtered-collection-query';
             }
           }
