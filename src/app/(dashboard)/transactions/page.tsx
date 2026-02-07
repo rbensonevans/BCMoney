@@ -27,7 +27,7 @@ export default function TransactionsPage() {
   const { toast } = useToast()
   const [isClearing, setIsClearing] = useState(false)
 
-  // Check if profile exists before retrieving transactions
+  // 1. Get Profile first to ensure auth context is fully ready
   const profileRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return doc(firestore, 'user_profiles', user.uid);
@@ -35,13 +35,13 @@ export default function TransactionsPage() {
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
 
-  // Using the user's UID as the account ID for this silo-based model
+  // 2. Setup Transactions Reference - Only if profile exists
   const transactionsRef = useMemoFirebase(() => {
-    // Only proceed if profileData is loaded and user is present
     if (!firestore || !user || !profileData) return null;
     return collection(firestore, 'accounts', user.uid, 'transactions');
   }, [firestore, user, profileData]);
 
+  // 3. Setup Query
   const transactionsQuery = useMemoFirebase(() => {
     if (!transactionsRef) return null;
     return query(
@@ -54,11 +54,10 @@ export default function TransactionsPage() {
   const { data: transactions, isLoading: isTxnLoading } = useCollection(transactionsQuery);
 
   const handleClearHistory = async () => {
-    if (!transactionsRef) return;
+    if (!transactionsRef || !firestore || !user) return;
     
     setIsClearing(true);
     try {
-      // Get all transactions for this token to delete them
       const q = query(transactionsRef, where('tokenSymbol', '==', token));
       const snapshot = await getDocs(q);
       
@@ -73,7 +72,7 @@ export default function TransactionsPage() {
       toast({
         variant: "destructive",
         title: "Clear Failed",
-        description: error.message,
+        description: "Could not clear history. Please try again.",
       });
     } finally {
       setIsClearing(false);
@@ -163,7 +162,7 @@ export default function TransactionsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {new Date(tx.transactionDate).toLocaleString()}
+                          {tx.transactionDate ? new Date(tx.transactionDate).toLocaleString() : 'N/A'}
                         </TableCell>
                         <TableCell className={cn(
                           "text-right font-mono font-bold",

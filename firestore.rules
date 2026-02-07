@@ -5,9 +5,7 @@ service cloud.firestore {
     /**
      * BCMONEY SECURITY RULES
      * 
-     * Implements a robust User-Ownership Silo model.
-     * Users have full access to any path that starts with their UID
-     * in the primary 'user_profiles' and 'accounts' collections.
+     * Implements a robust User-Ownership Silo model with explicit sub-collection rules.
      */
 
     function isSignedIn() {
@@ -18,7 +16,15 @@ service cloud.firestore {
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Explicitly allow all sub-collections and documents
+      match /balances/{tokenId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      match /recipients/{recipientId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+
+      // Catch-all for any other sub-paths
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
@@ -28,7 +34,11 @@ service cloud.firestore {
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Explicitly allow all sub-collections (like transactions)
+      match /transactions/{transactionId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+
+      // Catch-all for any other sub-paths
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
