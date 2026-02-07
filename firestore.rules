@@ -14,7 +14,7 @@ service cloud.firestore {
     }
 
     // Silo: User Profiles
-    // Explicitly handles the profile document and all sub-collections
+    // Grants full access to the user's profile and all nested data (balances, recipients, etc.)
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
@@ -24,7 +24,7 @@ service cloud.firestore {
     }
 
     // Silo: Accounts
-    // Explicitly handles the account document and all sub-collections (transactions)
+    // Grants full access to the user's account and all nested data (transactions)
     match /accounts/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
