@@ -626,7 +626,16 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-3">
                             <TokenIcon token={token} size={32} />
                             <div>
-                              <p className="text-sm font-bold">{token.name}</p>
+                              {isOwned ? (
+                                <Link 
+                                  href="/mytokens" 
+                                  className="text-sm font-bold hover:underline text-primary transition-colors"
+                                >
+                                  {token.name}
+                                </Link>
+                              ) : (
+                                <p className="text-sm font-bold">{token.name}</p>
+                              )}
                             </div>
                           </div>
                         </TableCell>
