@@ -11,15 +11,91 @@ import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useUser, useFirebase, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+
+interface RecipientListProps {
+  category: 'family' | 'friends' | 'general';
+  recipients: any[] | null;
+  isLoading: boolean;
+  onAdd: (name: string, handle: string, category: string) => void;
+  onDelete: (id: string) => void;
+}
+
+function RecipientList({ category, recipients, isLoading, onAdd, onDelete }: RecipientListProps) {
+  const [name, setName] = useState("");
+  const [handle, setHandle] = useState("");
+
+  const handleAdd = () => {
+    if (!name || !handle) return;
+    onAdd(name, handle, category);
+    setName("");
+    setHandle("");
+  };
+
+  const list = recipients?.filter(r => r.listType === category) || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 pt-4">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input 
+          placeholder="Full Name" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)}
+          className="flex-1"
+        />
+        <Input 
+          placeholder="@handle" 
+          value={handle} 
+          onChange={(e) => setHandle(e.target.value)}
+          className="flex-1"
+        />
+        <Button onClick={handleAdd} className="bg-secondary shrink-0">
+          <Plus className="h-4 w-4 mr-1" /> Add
+        </Button>
+      </div>
+
+      <div className="grid gap-2">
+        {list.length === 0 ? (
+          <p className="text-center py-8 text-muted-foreground text-sm italic">No recipients in this list yet.</p>
+        ) : (
+          list.map((r) => (
+            <div key={r.id} className="flex items-center justify-between p-3 bg-card border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-muted text-primary font-bold">
+                    {r.name.split(' ').map((n: string) => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-bold">{r.name}</p>
+                  <p className="text-xs text-secondary">{r.ethereumAddress}</p>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(r.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function RecipientsPage() {
   const { toast } = useToast()
   const { user } = useUser()
   const { firestore } = useFirebase()
-
-  const [newName, setNewName] = useState("")
-  const [newHandle, setNewHandle] = useState("")
 
   const recipientsRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -28,25 +104,27 @@ export default function RecipientsPage() {
 
   const { data: recipients, isLoading } = useCollection(recipientsRef);
 
-  const addRecipient = (category: 'family' | 'friends' | 'general') => {
-    if (!newName || !newHandle || !recipientsRef || !user) return
+  const addRecipient = (name: string, handleInput: string, category: string) => {
+    if (!recipientsRef || !user) return;
     
-    const handle = newHandle.startsWith("@") ? newHandle : `@${newHandle}`
+    const handle = handleInput.startsWith("@") ? handleInput : `@${handleInput}`;
     
-    addDocumentNonBlocking(recipientsRef, {
-      name: newName,
-      ethereumAddress: handle, // using handle for P2P simplicity
+    // Create a new document reference to get the ID first
+    const newDocRef = doc(recipientsRef);
+    
+    setDocumentNonBlocking(newDocRef, {
+      id: newDocRef.id,
+      name: name,
+      ethereumAddress: handle,
       listType: category,
       userProfileId: user.uid
-    });
+    }, { merge: true });
 
-    setNewName("")
-    setNewHandle("")
     toast({
       title: "Recipient Added",
-      description: `${newName} has been added to your ${category} list.`,
-    })
-  }
+      description: `${name} has been added to your ${category} list.`,
+    });
+  };
 
   const deleteRecipient = (id: string) => {
     if (!recipientsRef) return;
@@ -55,69 +133,8 @@ export default function RecipientsPage() {
     toast({
       title: "Recipient Deleted",
       variant: "destructive"
-    })
-  }
-
-  const ListContent = ({ category }: { category: 'family' | 'friends' | 'general' }) => {
-    const list = recipients?.filter(r => r.listType === category) || []
-    
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-4 pt-4">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Input 
-            placeholder="Full Name" 
-            value={newName} 
-            onChange={(e) => setNewName(e.target.value)}
-            className="flex-1"
-          />
-          <Input 
-            placeholder="@handle" 
-            value={newHandle} 
-            onChange={(e) => setNewHandle(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={() => addRecipient(category)} className="bg-secondary shrink-0">
-            <Plus className="h-4 w-4 mr-1" /> Add
-          </Button>
-        </div>
-
-        <div className="grid gap-2">
-          {list.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground text-sm italic">No recipients in this list yet.</p>
-          ) : (
-            list.map((r) => (
-              <div key={r.id} className="flex items-center justify-between p-3 bg-card border rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-muted text-primary font-bold">
-                      {r.name.split(' ').map((n: string) => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-bold">{r.name}</p>
-                    <p className="text-xs text-secondary">{r.ethereumAddress}</p>
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => deleteRecipient(r.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    )
-  }
+    });
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -146,7 +163,13 @@ export default function RecipientsPage() {
               <CardDescription>Trusted family members for frequent transfers</CardDescription>
             </CardHeader>
             <CardContent>
-              <ListContent category="family" />
+              <RecipientList 
+                category="family" 
+                recipients={recipients} 
+                isLoading={isLoading} 
+                onAdd={addRecipient} 
+                onDelete={deleteRecipient} 
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -158,7 +181,13 @@ export default function RecipientsPage() {
               <CardDescription>Peers and social circles</CardDescription>
             </CardHeader>
             <CardContent>
-              <ListContent category="friends" />
+              <RecipientList 
+                category="friends" 
+                recipients={recipients} 
+                isLoading={isLoading} 
+                onAdd={addRecipient} 
+                onDelete={deleteRecipient} 
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -170,7 +199,13 @@ export default function RecipientsPage() {
               <CardDescription>Utilities, merchants, and other public handles</CardDescription>
             </CardHeader>
             <CardContent>
-              <ListContent category="general" />
+              <RecipientList 
+                category="general" 
+                recipients={recipients} 
+                isLoading={isLoading} 
+                onAdd={addRecipient} 
+                onDelete={deleteRecipient} 
+              />
             </CardContent>
           </Card>
         </TabsContent>
