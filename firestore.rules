@@ -6,10 +6,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // User Profile Silo
+    // User Profile Silo - strictly owner access
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
+      // Explicitly matching sub-collections for clarity and debugging
       match /balances/{tokenId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
         
@@ -22,17 +23,16 @@ service cloud.firestore {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
       
-      // Recursive safety
+      // Safety recursive rule for any future sub-collections
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // Account Silo
+    // Account Identity Silo - strictly owner access
     match /accounts/{accountId} {
       allow read, write: if isSignedIn() && request.auth.uid == accountId;
       
-      // Recursive safety
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == accountId;
       }

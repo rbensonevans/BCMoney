@@ -32,7 +32,7 @@ import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
-  // Helper component for token icons
+  // Helper component for token icons - Complete 30 Tokens
   function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
     if (token.symbol === 'BTC') {
       return (
@@ -643,14 +643,7 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-3">
                             <TokenIcon token={token} size={32} />
                             <div>
-                              {isOwned ? (
-                                <Link 
-                                  href="/mytokens" 
-                                  className="text-sm font-bold hover:underline text-primary transition-colors"
-                                >
-                                  {token.name}
-                                </Link>
-                              ) : isOnWatchlist ? (
+                              {isOnWatchlist ? (
                                 <Link 
                                   href="/watchlist" 
                                   className="text-sm font-bold hover:underline text-primary transition-colors"

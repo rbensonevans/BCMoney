@@ -175,8 +175,7 @@
         },
         "recipientAccountId": {
           "type": "string",
-          "description": "Reference to recipient Account or external address.",
-          "format": "string"
+          "description": "Reference to recipient Account or external address."
         }
       },
       "required": [
