@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Camera, Save, User, MapPin, Phone, Mail, Fingerprint, Trash2, AlertTriangle, Loader2, Database } from "lucide-react"
+import { Camera, Save, User, MapPin, Phone, Mail, Fingerprint, Trash2, AlertTriangle, Loader2, Database, Image as ImageIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection, getDocs, deleteDoc } from "firebase/firestore"
@@ -44,6 +44,7 @@ export default function ProfilePage() {
     phone: "",
     email: "",
     ethereumAddress: "",
+    photoUrl: "",
   })
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export default function ProfilePage() {
         address: profileData.address || "",
         phone: profileData.phoneNumber || "",
         email: profileData.email || "",
+        photoUrl: profileData.photoUrl || "",
       }))
     }
     if (accountData) {
@@ -81,6 +83,7 @@ export default function ProfilePage() {
       address: formData.address,
       phoneNumber: formData.phone,
       email: formData.email,
+      photoUrl: formData.photoUrl,
       id: user.uid,
     }, { merge: true });
 
@@ -110,6 +113,7 @@ export default function ProfilePage() {
       firstName: "R.",
       lastName: "Benson-Evans",
       ownedTokens: updatedOwnedTokens,
+      photoUrl: `https://picsum.photos/seed/${user.uid}/400/400`,
       id: user.uid,
       email: user.email || ""
     }, { merge: true });
@@ -157,9 +161,12 @@ export default function ProfilePage() {
       await Promise.all(balancesSnap.docs.map(d => deleteDoc(d.ref)));
 
       // Delete transactions
-      const transactionsRef = collection(firestore, 'accounts', user.uid, 'transactions');
-      const transactionsSnap = await getDocs(transactionsRef);
-      await Promise.all(transactionsSnap.docs.map(d => deleteDoc(d.ref)));
+      // Note: Transactions are now nested under balances. We need to find all balances first.
+      for (const balanceDoc of balancesSnap.docs) {
+        const txnsRef = collection(firestore, 'user_profiles', user.uid, 'balances', balanceDoc.id, 'transactions');
+        const txnsSnap = await getDocs(txnsRef);
+        await Promise.all(txnsSnap.docs.map(t => deleteDoc(t.ref)));
+      }
 
       // Delete main account
       await deleteDoc(doc(firestore, 'accounts', user.uid));
@@ -213,14 +220,14 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center gap-4 text-center">
                 <div className="relative">
                   <Avatar className="h-32 w-32 border-4 border-muted shadow-lg">
-                    <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/200/200`} />
+                    <AvatarImage src={formData.photoUrl || `https://picsum.photos/seed/${user?.uid}/200/200`} />
                     <AvatarFallback className="text-4xl bg-primary text-primary-foreground font-bold">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
-                  <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full h-10 w-10 shadow-md">
-                    <Camera className="h-5 w-5" />
-                  </Button>
+                  <div className="absolute bottom-0 right-0 bg-secondary text-white rounded-full p-2 shadow-md">
+                    <Camera className="h-4 w-4" />
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-primary">
@@ -304,6 +311,19 @@ export default function ProfilePage() {
                   className="font-semibold text-secondary" 
                 />
                 <p className="text-[10px] text-muted-foreground">This is your primary identity for P2P transfers.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="photoUrl" className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-muted-foreground" /> Profile Photo URL
+                </Label>
+                <Input 
+                  id="photoUrl" 
+                  value={formData.photoUrl} 
+                  placeholder="https://example.com/photo.jpg"
+                  onChange={(e) => setFormData({...formData, photoUrl: e.target.value})} 
+                />
+                <p className="text-[10px] text-muted-foreground">Enter a URL for your profile picture.</p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
