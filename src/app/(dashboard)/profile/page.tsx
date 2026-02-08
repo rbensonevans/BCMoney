@@ -14,7 +14,6 @@ import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection, getDocs, deleteDoc } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { signOut } from "firebase/auth"
-import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -28,7 +27,13 @@ export default function ProfilePage() {
     return doc(firestore, 'user_profiles', user.uid);
   }, [firestore, user]);
 
+  const accountRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'accounts', user.uid);
+  }, [firestore, user]);
+
   const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
+  const { data: accountData, isLoading: isAccountLoading } = useDoc(accountRef);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -38,64 +43,78 @@ export default function ProfilePage() {
     address: "",
     phone: "",
     email: "",
+    ethereumAddress: "",
   })
 
   useEffect(() => {
     if (profileData) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         firstName: profileData.firstName || "",
         middleName: profileData.middleName || "",
         lastName: profileData.lastName || "",
-        uniqueName: profileData.uniqueName || "",
         address: profileData.address || "",
         phone: profileData.phoneNumber || "",
         email: profileData.email || "",
-      })
-    } else if (user) {
+      }))
+    }
+    if (accountData) {
+      setFormData(prev => ({
+        ...prev,
+        uniqueName: accountData.uniqueName || "",
+        ethereumAddress: accountData.ethereumAddress || "",
+      }))
+    } else if (user && !profileData) {
       setFormData(prev => ({ ...prev, email: user.email || "" }))
     }
-  }, [profileData, user])
+  }, [profileData, accountData, user])
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!profileRef || !user) return;
+    if (!profileRef || !accountRef || !user) return;
 
+    // Save personal info to UserProfile
     setDocumentNonBlocking(profileRef, {
-      ...formData,
-      id: user.uid,
+      firstName: formData.firstName,
+      middleName: formData.middleName,
+      lastName: formData.lastName,
+      address: formData.address,
       phoneNumber: formData.phone,
+      email: formData.email,
+      id: user.uid,
+    }, { merge: true });
+
+    // Save identity info to Account
+    setDocumentNonBlocking(accountRef, {
+      uniqueName: formData.uniqueName,
+      ethereumAddress: formData.ethereumAddress || "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+      userProfileId: user.uid,
+      id: user.uid,
+      balance: accountData?.balance || 0,
     }, { merge: true });
 
     toast({
       title: "Profile Updated",
-      description: "Your changes have been saved successfully.",
+      description: "Your personal details and account handle have been saved.",
     })
   }
 
   const handleSeedTestData = () => {
-    if (!profileRef || !user || !firestore) return;
+    if (!profileRef || !accountRef || !user || !firestore) return;
     
     const btcId = '1';
     const updatedOwnedTokens = Array.from(new Set([...(profileData?.ownedTokens || []), btcId]));
     
-    // 1. Update Profile
+    // 1. Update Profile (Personal)
     setDocumentNonBlocking(profileRef, {
-      uniqueName: "@rbensonevans",
+      firstName: "R.",
+      lastName: "Benson-Evans",
       ownedTokens: updatedOwnedTokens,
       id: user.uid,
       email: user.email || ""
     }, { merge: true });
 
-    // 2. Set BTC Balance
-    const btcBalanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', btcId);
-    setDocumentNonBlocking(btcBalanceRef, {
-      id: btcId,
-      tokenId: btcId,
-      balance: 10
-    }, { merge: true });
-
-    // 3. Provision primary account
-    const accountRef = doc(firestore, 'accounts', user.uid);
+    // 2. Update Account (Identity & Identity Handle)
     setDocumentNonBlocking(accountRef, {
       id: user.uid,
       userProfileId: user.uid,
@@ -104,9 +123,19 @@ export default function ProfilePage() {
       balance: 1000.0
     }, { merge: true });
 
+    // 3. Set BTC Balance in Portfolio
+    const btcBalanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', btcId);
+    setDocumentNonBlocking(btcBalanceRef, {
+      id: btcId,
+      tokenId: btcId,
+      tokenSymbol: 'BTC',
+      tokenName: 'Bitcoin',
+      balance: 10
+    }, { merge: true });
+
     toast({
       title: "Test Data Seeded",
-      description: "Account handle set to @rbensonevans and 10 BTC added to MyTokens.",
+      description: "Account set to @rbensonevans with 10 BTC portfolio balance.",
     })
   }
 
@@ -120,7 +149,7 @@ export default function ProfilePage() {
       const recipientsSnap = await getDocs(recipientsRef);
       await Promise.all(recipientsSnap.docs.map(d => deleteDoc(d.ref)));
 
-      // Delete balances
+      // Delete portfolio balances
       const balancesRef = collection(firestore, 'user_profiles', user.uid, 'balances');
       const balancesSnap = await getDocs(balancesRef);
       await Promise.all(balancesSnap.docs.map(d => deleteDoc(d.ref)));
@@ -130,10 +159,10 @@ export default function ProfilePage() {
       const transactionsSnap = await getDocs(transactionsRef);
       await Promise.all(transactionsSnap.docs.map(d => deleteDoc(d.ref)));
 
-      // Delete account
+      // Delete main account
       await deleteDoc(doc(firestore, 'accounts', user.uid));
 
-      // Delete profile
+      // Delete personal profile
       if (profileRef) {
         await deleteDoc(profileRef);
       }
@@ -158,7 +187,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (isProfileLoading) {
+  if (isProfileLoading || isAccountLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -215,7 +244,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Set up a test account with the handle <strong>@rbensonevans</strong> and 10 BTC.
+                Set up a test account with the handle <strong>@rbensonevans</strong> and a portfolio balance.
               </p>
               <Button 
                 variant="outline" 
@@ -236,7 +265,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Clearing your data will permanently delete all records including transactions.
+                Clearing your data will permanently delete all records including portfolio balances.
               </p>
               <Button 
                 variant="destructive" 
@@ -255,12 +284,26 @@ export default function ProfilePage() {
         <Card className="md:col-span-2 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" /> Personal Information
+              <User className="h-5 w-5 text-primary" /> Identity & Profile
             </CardTitle>
-            <CardDescription>Update your public and private profile details</CardDescription>
+            <CardDescription>Update your public handle and personal information</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="uniqueName" className="flex items-center gap-2">
+                  <Fingerprint className="h-4 w-4 text-secondary" /> Unique Handle (@name)
+                </Label>
+                <Input 
+                  id="uniqueName" 
+                  value={formData.uniqueName} 
+                  placeholder="@your_handle"
+                  onChange={(e) => setFormData({...formData, uniqueName: e.target.value})} 
+                  className="font-semibold text-secondary" 
+                />
+                <p className="text-[10px] text-muted-foreground">This is your primary identity for P2P transfers.</p>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
@@ -274,20 +317,6 @@ export default function ProfilePage() {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input id="lastName" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="uniqueName" className="flex items-center gap-2">
-                  <Fingerprint className="h-4 w-4 text-secondary" /> Unique Name (@handle)
-                </Label>
-                <Input 
-                  id="uniqueName" 
-                  value={formData.uniqueName} 
-                  placeholder="@your_handle"
-                  onChange={(e) => setFormData({...formData, uniqueName: e.target.value})} 
-                  className="font-semibold text-secondary" 
-                />
-                <p className="text-[10px] text-muted-foreground">This name is used to identify you for P2P transfers.</p>
               </div>
 
               <div className="space-y-2">
@@ -312,7 +341,7 @@ export default function ProfilePage() {
               </div>
 
               <Button type="submit" className="w-full bg-primary gap-2 h-12">
-                <Save className="h-4 w-4" /> Save Changes
+                <Save className="h-4 w-4" /> Save All Changes
               </Button>
             </form>
           </CardContent>

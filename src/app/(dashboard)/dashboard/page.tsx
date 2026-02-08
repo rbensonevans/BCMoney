@@ -430,7 +430,14 @@ export default function DashboardPage() {
     return doc(firestore, 'user_profiles', user.uid);
   }, [firestore, user]);
 
+  const accountRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'accounts', user.uid);
+  }, [firestore, user]);
+
   const { data: profileData } = useDoc(profileRef);
+  const { data: accountData } = useDoc(accountRef);
+  
   const watchlist = profileData?.watchlist || ['1', '2']; 
   const ownedTokens = profileData?.ownedTokens || [];
 
@@ -476,13 +483,12 @@ export default function DashboardPage() {
       email: user.email || ""
     }, { merge: true });
 
-    // Special case for testing: 10 BTC for @rbensonevans
+    // Initialize balance in subcollection
     let initialBalance = 100.0;
-    if (token.symbol === 'BTC' && profileData?.uniqueName === '@rbensonevans') {
+    if (token.symbol === 'BTC' && accountData?.uniqueName === '@rbensonevans') {
       initialBalance = 10.0;
     }
 
-    // Initialize balance in subcollection with explicit token info
     const balanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
     setDocumentNonBlocking(balanceRef, {
       id: tokenId,
@@ -494,7 +500,7 @@ export default function DashboardPage() {
 
     toast({
       title: "Token Added",
-      description: `${tokenName} has been added to your MyTokens list.`
+      description: `${tokenName} has been added to your MyTokens portfolio.`
     })
   }
 
@@ -590,11 +596,6 @@ export default function DashboardPage() {
                 {searchQuery ? `Found ${filteredTokens.length} tokens` : "Current rankings by market capitalization"}
               </CardDescription>
             </div>
-            {!searchQuery && (
-              <Button variant="outline" size="sm" className="hidden sm:flex">
-                <Plus className="h-4 w-4 mr-2" /> Custom Token
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -604,7 +605,7 @@ export default function DashboardPage() {
                 <TableRow className="bg-muted/50">
                   <TableHead className="w-[100px]">
                     <div className="text-[10px] leading-tight uppercase font-bold text-center">
-                      Add to<br/>MyTokens
+                      Add to<br/>Portfolio
                     </div>
                   </TableHead>
                   <TableHead className="w-[50px]">#</TableHead>

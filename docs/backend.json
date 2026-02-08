@@ -54,10 +54,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "uniqueName": {
-          "type": "string",
-          "description": "A unique handle for the user."
         }
       },
       "required": [
@@ -97,6 +93,8 @@
       "required": [
         "id",
         "tokenId",
+        "tokenSymbol",
+        "tokenName",
         "balance"
       ]
     },
@@ -124,7 +122,7 @@
         },
         "balance": {
           "type": "number",
-          "description": "The current balance of the account."
+          "description": "The current base balance of the account (USD equivalent)."
         }
       },
       "required": [
@@ -252,7 +250,7 @@
           "schema": {
             "$ref": "#/backend/entities/Account"
           },
-          "description": "Stores user account information."
+          "description": "Stores user account identity (handle, eth address, base balance)."
         }
       },
       {
