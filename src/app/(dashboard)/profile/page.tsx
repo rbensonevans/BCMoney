@@ -123,15 +123,16 @@ export default function ProfilePage() {
       balance: 1000.0
     }, { merge: true });
 
-    // 3. Set BTC Balance in Portfolio
+    // 3. Set BTC Balance in Portfolio with its own specific address
     const btcBalanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', btcId);
     setDocumentNonBlocking(btcBalanceRef, {
       id: btcId,
       tokenId: btcId,
-      userProfileId: user.uid, // Explicitly linking as per best practice
+      userProfileId: user.uid,
       tokenSymbol: 'BTC',
       tokenName: 'Bitcoin',
-      balance: 10
+      balance: 10,
+      ethereumAddress: "0xbc1q" + Array.from({length: 36}, () => Math.floor(Math.random() * 16).toString(16)).join('')
     }, { merge: true });
 
     toast({

@@ -92,6 +92,10 @@
         "balance": {
           "type": "number",
           "description": "The current balance of this token."
+        },
+        "ethereumAddress": {
+          "type": "string",
+          "description": "The specific public address for this token for this user."
         }
       },
       "required": [
@@ -123,7 +127,7 @@
         },
         "ethereumAddress": {
           "type": "string",
-          "description": "The user's Ethereum public address."
+          "description": "The user's Ethereum public address (primary/default)."
         },
         "balance": {
           "type": "number",

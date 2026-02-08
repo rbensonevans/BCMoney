@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -5,20 +6,38 @@ import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Copy, QrCode, ShieldCheck, Wallet, ArrowLeft } from "lucide-react"
+import { Copy, QrCode, ShieldCheck, Wallet, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
+import { doc } from "firebase/firestore"
+import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function DepositPage() {
   const { toast } = useToast()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token') || 'ETH'
-  const ethAddress = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
+  const tokenSymbol = searchParams.get('token') || 'ETH'
+  const { user } = useUser()
+  const { firestore } = useFirebase()
+
+  // Find token ID from symbol to fetch the correct balance document
+  const currentToken = TOP_30_TOKENS.find(t => t.symbol === tokenSymbol)
+  const tokenId = currentToken?.id
+
+  const balanceRef = useMemoFirebase(() => {
+    if (!firestore || !user || !tokenId) return null;
+    return doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
+  }, [firestore, user, tokenId]);
+
+  const { data: balanceData, isLoading } = useDoc(balanceRef);
+
+  // Use the token-specific address if available, fallback to a placeholder/default
+  const ethAddress = balanceData?.ethereumAddress || "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
 
   const copyAddress = () => {
     navigator.clipboard.writeText(ethAddress)
     toast({
       title: "Address copied",
-      description: `${token} address has been copied to clipboard.`,
+      description: `${tokenSymbol} address has been copied to clipboard.`,
     })
   }
 
@@ -31,7 +50,7 @@ export default function DepositPage() {
           </Link>
         </Button>
         <h1 className="text-3xl font-bold text-primary">Deposit Funds</h1>
-        <p className="text-muted-foreground">Send {token} to your BCMoney wallet</p>
+        <p className="text-muted-foreground">Send {tokenSymbol} to your BCMoney wallet</p>
       </div>
 
       <Card className="shadow-lg border-none">
@@ -39,13 +58,13 @@ export default function DepositPage() {
           <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
             <Wallet className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle>Your {token} Deposit Address</CardTitle>
-          <CardDescription>Only send {token} to this address. Other assets will be lost.</CardDescription>
+          <CardTitle>Your {tokenSymbol} Deposit Address</CardTitle>
+          <CardDescription>Only send {tokenSymbol} to this address. Other assets will be lost.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col items-center justify-center p-6 bg-muted/30 rounded-xl border-2 border-dashed border-border">
             <div className="bg-white p-4 rounded-lg shadow-inner mb-4">
-               <QrCode className="h-48 w-48 text-primary" />
+               {isLoading ? <Loader2 className="h-48 w-48 animate-spin text-muted-foreground" /> : <QrCode className="h-48 w-48 text-primary" />}
             </div>
             <div className="w-full space-y-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Wallet Address</p>
@@ -69,8 +88,8 @@ export default function DepositPage() {
             <div className="p-4 rounded-lg bg-blue-50 flex items-start gap-3 border border-blue-100">
                <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] shrink-0 mt-0.5">i</div>
               <div>
-                <p className="text-sm font-bold text-blue-700">Unique Identifier</p>
-                <p className="text-xs text-blue-600">This address is permanently linked to your profile.</p>
+                <p className="text-sm font-bold text-blue-700">Token Specific</p>
+                <p className="text-xs text-blue-600">This address is unique for your {tokenSymbol} holdings.</p>
               </div>
             </div>
           </div>

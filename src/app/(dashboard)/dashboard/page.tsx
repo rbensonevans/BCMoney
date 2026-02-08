@@ -189,17 +189,17 @@ export default function DashboardPage() {
     }, { merge: true });
 
     // 2. Initialize the TokenBalance entry in the sub-collection
-    // The tokenId is the document ID, providing a natural key for each asset
     const balanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
     
-    // Explicitly including tokenId and userProfileId as requested
     setDocumentNonBlocking(balanceRef, {
       id: tokenId,
       tokenId: tokenId,
       userProfileId: user.uid,
       tokenSymbol: token.symbol,
       tokenName: token.name,
-      balance: 0.0 // Starting balance is zero
+      balance: 0.0,
+      // Default placeholder address for this specific token
+      ethereumAddress: "0x" + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')
     }, { merge: true });
 
     toast({
