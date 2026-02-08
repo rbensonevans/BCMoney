@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useMemo } from "react"
@@ -503,7 +502,12 @@ export default function MyTokensPage() {
                         <div className="flex items-center gap-3">
                           <TokenIcon token={token} size={32} />
                           <div>
-                            <p className="text-sm font-bold">{token.name}</p>
+                            <Link 
+                              href="/dashboard" 
+                              className="text-sm font-bold hover:underline text-primary transition-colors"
+                            >
+                              {token.name}
+                            </Link>
                           </div>
                         </div>
                       </TableCell>
@@ -553,7 +557,7 @@ export default function MyTokensPage() {
                           </Button>
                           <Button variant="link" asChild className="text-muted-foreground p-0 h-auto">
                             <Link href={`/transactions?token=${token.symbol}&tokenId=${token.id}`}>
-                              <History className="h-3 w-3 mr-1" /> Txn
+                              <History className="h-3 w-3 mr-1" /> History
                             </Link>
                           </Button>
                         </div>
