@@ -11,7 +11,15 @@ service cloud.firestore {
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Specifically allow access to all sub-collections (balances, recipients)
+      // Specifically allow access to all sub-collections
+      match /balances/{tokenId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+      match /recipients/{recipientId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      // Secondary catch-all for any other nested structures
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }

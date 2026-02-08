@@ -44,16 +44,6 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
-  if (token.symbol === 'BCH') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
-          <circle cx="16" cy="16" r="16" fill="#8dc351"/>
-          <path d="M23.189 14.152c.286-1.914-.11-3.328-3.011-4.102l.614-2.464-1.498-.374-.598 2.4c-.394-.098-.788-.192-1.182-.284l.602-2.417-1.498-.374-.614 2.464c-.326-.074-.645-.148-.962-.224l.001-.005-2.066-.516-.399 1.6s1.108.254 1.085.27c.605.151.714.552.696.871l-.7 2.809c.042.011.096.026.156.048-.05-.013-.105-.026-.164-.04l-1.127 4.52c-.074.183-.26.458-.68.353.015.021-1.085-.271-1.085-.271l-.745 1.715 1.95.487c.362.091.717.185 1.066.275l-.619 2.483 1.498.374.614-2.464c.409.111.808.217 1.2.318l-.603 2.42 1.498.374.62-2.487c2.556.484 4.479.288 5.286-2.024.652-1.861-.031-2.934-1.371-3.635.975-.225 1.71-.868 1.905-2.193zm-3.41 4.802c-.464 1.862-3.601.855-4.617.603l.824-3.305c1.016.252 4.28.749 3.793 2.702zm.466-4.832c-.422 1.696-3.033.834-3.88.623l.748-2.999c.847.211 3.57.606 3.132 2.376z" fill="#FFF" transform="rotate(-15 16 16)"/>
-        </svg>
-      </div>
-    )
-  }
   if (token.symbol === 'ETH') {
     return (
       <div className="shrink-0" style={{ width: size, height: size }}>
@@ -127,285 +117,6 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
-  if (token.symbol === 'ADA') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#0033AD"/>
-          <circle cx="16" cy="16" r="2" fill="white"/>
-          <circle cx="16" cy="11" r="1.5" fill="white"/>
-          <circle cx="16" cy="21" r="1.5" fill="white"/>
-          <circle cx="11" cy="16" r="1.5" fill="white"/>
-          <circle cx="21" cy="16" r="1.5" fill="white"/>
-          <circle cx="12.5" cy="12.5" r="1.2" fill="white"/>
-          <circle cx="19.5" cy="12.5" r="1.2" fill="white"/>
-          <circle cx="12.5" cy="19.5" r="1.2" fill="white"/>
-          <circle cx="19.5" cy="19.5" r="1.2" fill="white"/>
-          <circle cx="16" cy="7" r="0.8" fill="white"/>
-          <circle cx="16" cy="25" r="0.8" fill="white"/>
-          <circle cx="7" cy="16" r="0.8" fill="white"/>
-          <circle cx="25" cy="16" r="0.8" fill="white"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'AVAX') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 32 32">
-          <circle cx="16" cy="16" r="16" fill="#E84142"/>
-          <path d="m17.51 14.54-1.51-2.61-1.51 2.61h3.02zM12.63 23h2.38l-1.19-2.07L12.63 23zm4.37-2.07-1.19 2.07h2.38l-1.19-2.07zM16 10l-8 13.86h16L16 10zm4.24 11h-8.48L16 13.66 20.24 21z" fill="#FFF"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'DOGE') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#BA9F33"/>
-          <circle cx="16" cy="16" r="13" fill="#E1B305"/>
-          <path d="M12 11V21H16.5C18.433 21 20 19.433 20 17.5V14.5C20 12.567 18.433 11 16.5 11H12ZM14.5 18.5V13.5H16.5C17.6046 13.5 18.5 14.3954 18.5 15.5V16.5C18.5 17.6046 17.6046 18.5 16.5 18.5H14.5Z" fill="white"/>
-          <rect x="11" y="15.5" width="4" height="1" fill="white"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'TRX') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#FF0013"/>
-          <path d="M24 12L16 5L8 12L16 27L24 12ZM16 8L21 12.5L16 22L11 12.5L16 8Z" fill="white"/>
-          <path d="M16 8L11 12.5L16 22V8Z" fill="white" fillOpacity="0.3"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'DOT') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="black"/>
-          <ellipse cx="11" cy="16" rx="2.5" ry="5" fill="white"/>
-          <ellipse cx="16" cy="16" rx="2.5" ry="5" fill="white"/>
-          <ellipse cx="21" cy="16" rx="2.5" ry="5" fill="white"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'LINK') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#2A5ADA"/>
-          <path d="M16 8L24 12.5V20L16 24.5L8 20V12.5L16 8ZM16 11L12 13.5V18.5L16 21L20 18.5V13.5L16 11Z" fill="white"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'MATIC') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#8247E5"/>
-          <path d="M16 8L23 12V20L16 24L9 20V12L16 8ZM16 11.5L12.5 13.5V18.5L16 20.5L19.5 18.5V13.5L16 11.5Z" fill="white"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'SHIB') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#FFA409"/>
-          <circle cx="16" cy="16" r="15" stroke="#E32E1D" strokeWidth="2"/>
-          <path d="M16 8C13 8 10 9.5 8.5 12L7 16C7 16 7.5 24 16 24C24.5 24 25 16 25 16L23.5 12C22 9.5 19 8 16 8Z" fill="#FFA409"/>
-          <path d="M16 24C11 24 8.5 20 8.5 18C8.5 18 9 22 16 22C23 22 23.5 18 23.5 18C23.5 20 21 24 16 24Z" fill="white"/>
-          <path d="M12 14C12.5523 14 13 13.5523 13 13C13 12.4477 12.5523 12 12 12C11.4477 12 11 12.4477 11 13C11 13.5523 11.4477 14 12 14Z" fill="black"/>
-          <path d="M20 14C20.5523 14 21 13.5523 21 13C21 12.4477 20.5523 12 20 12C19.4477 12 19 13C19 13.5523 19.4477 14 20 14Z" fill="black"/>
-          <path d="M16 19C16.5523 19 17 18.5523 17 18C17 17.4477 16.5523 17 16 17C15.4477 17 15 17.4477 15 18C15 18.5523 15.4477 19 16 19Z" fill="black"/>
-          <path d="M14 20C14 20 15 21 16 21C17 21 18 20 18 20" stroke="black" strokeWidth="0.5" strokeLinecap="round"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'LTC') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
-          <circle cx="16" cy="16" r="16" fill="#345D9D"/>
-          <path d="M21 21h-6.2l1.1-4.1H18L19.1 13h-2.1l1.1-4.1H13.9L10 23.3h11V21z" fill="white" />
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'NEAR') {
-    return (
-      <div className="shrink-0" style={{ width: size, height: size }}>
-        <svg viewBox="0 0 32 32" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="16" fill="#00FFA3"/>
-          <path d="M21.5 10H17.5L10.5 20.5V10H7V22H11L18 11.5V22H21.5V10Z" fill="black"/>
-        </svg>
-      </div>
-    )
-  }
-  if (token.symbol === 'UNI') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/7083.png" 
-          alt="UNI" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'DAI') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/4943.png" 
-          alt="DAI" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'XLM') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/512.png" 
-          alt="XLM" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'KAS') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/20396.png" 
-          alt="KAS" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'PEPE') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png" 
-          alt="PEPE" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'XMR') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/328.png" 
-          alt="XMR" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'ATOM') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/3794.png" 
-          alt="ATOM" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'ALGO') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/4030.png" 
-          alt="ALGO" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'AAVE') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/7278.png" 
-          alt="AAVE" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'ARB') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/11841.png" 
-          alt="ARB" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'OP') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/11840.png" 
-          alt="OP" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
-  if (token.symbol === 'STX') {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image 
-          src="https://s2.coinmarketcap.com/static/img/coins/64x64/4847.png" 
-          alt="STX" 
-          width={size} 
-          height={size} 
-          className="object-cover"
-        />
-      </div>
-    )
-  }
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
@@ -430,15 +141,9 @@ export default function DashboardPage() {
     return doc(firestore, 'user_profiles', user.uid);
   }, [firestore, user]);
 
-  const accountRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return doc(firestore, 'accounts', user.uid);
-  }, [firestore, user]);
-
   const { data: profileData } = useDoc(profileRef);
-  const { data: accountData } = useDoc(accountRef);
   
-  const watchlist = profileData?.watchlist || ['1', '2']; 
+  const watchlist = profileData?.watchlist || []; 
   const ownedTokens = profileData?.ownedTokens || [];
 
   const filteredTokens = useMemo(() => {
@@ -476,26 +181,25 @@ export default function DashboardPage() {
 
     const newOwnedTokens = [...ownedTokens, tokenId];
 
-    // Update profile owned tokens list
+    // 1. Update Profile's owned tokens list
     setDocumentNonBlocking(profileRef, { 
       ownedTokens: newOwnedTokens,
       id: user.uid,
       email: user.email || ""
     }, { merge: true });
 
-    // Initialize balance in subcollection
-    let initialBalance = 100.0;
-    if (token.symbol === 'BTC' && accountData?.uniqueName === '@rbensonevans') {
-      initialBalance = 10.0;
-    }
-
+    // 2. Initialize the TokenBalance entry in the sub-collection
+    // The tokenId is the document ID, providing a natural key for each asset
     const balanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
+    
+    // Explicitly including tokenId and userProfileId as requested
     setDocumentNonBlocking(balanceRef, {
       id: tokenId,
       tokenId: tokenId,
+      userProfileId: user.uid,
       tokenSymbol: token.symbol,
       tokenName: token.name,
-      balance: initialBalance
+      balance: 0.0 // Starting balance is zero
     }, { merge: true });
 
     toast({
@@ -589,14 +293,10 @@ export default function DashboardPage() {
 
       <Card className="shadow-sm border-none">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Top 30 Market Overview</CardTitle>
-              <CardDescription>
-                {searchQuery ? `Found ${filteredTokens.length} tokens` : "Current rankings by market capitalization"}
-              </CardDescription>
-            </div>
-          </div>
+          <CardTitle>Top 30 Market Overview</CardTitle>
+          <CardDescription>
+            {searchQuery ? `Found ${filteredTokens.length} tokens` : "Current rankings by market capitalization"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">

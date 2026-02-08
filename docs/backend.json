@@ -71,11 +71,15 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "The token ID."
+          "description": "The token ID (serves as document ID)."
         },
         "tokenId": {
           "type": "string",
           "description": "The token ID."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "The ID of the user who owns this balance."
         },
         "tokenSymbol": {
           "type": "string",
@@ -93,6 +97,7 @@
       "required": [
         "id",
         "tokenId",
+        "userProfileId",
         "tokenSymbol",
         "tokenName",
         "balance"

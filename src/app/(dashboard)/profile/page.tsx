@@ -128,6 +128,7 @@ export default function ProfilePage() {
     setDocumentNonBlocking(btcBalanceRef, {
       id: btcId,
       tokenId: btcId,
+      userProfileId: user.uid, // Explicitly linking as per best practice
       tokenSymbol: 'BTC',
       tokenName: 'Bitcoin',
       balance: 10
