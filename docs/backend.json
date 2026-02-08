@@ -81,6 +81,14 @@
           "type": "string",
           "description": "The token ID."
         },
+        "tokenSymbol": {
+          "type": "string",
+          "description": "The symbol of the token (e.g., BTC)."
+        },
+        "tokenName": {
+          "type": "string",
+          "description": "The full name of the token (e.g., Bitcoin)."
+        },
         "balance": {
           "type": "number",
           "description": "The current balance of this token."

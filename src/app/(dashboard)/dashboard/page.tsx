@@ -464,6 +464,9 @@ export default function DashboardPage() {
   const addToMyTokens = (tokenId: string, tokenName: string) => {
     if (!profileRef || !user || !firestore || ownedTokens.includes(tokenId)) return;
 
+    const token = TOP_30_TOKENS.find(t => t.id === tokenId);
+    if (!token) return;
+
     const newOwnedTokens = [...ownedTokens, tokenId];
 
     // Update profile owned tokens list
@@ -475,16 +478,17 @@ export default function DashboardPage() {
 
     // Special case for testing: 10 BTC for @rbensonevans
     let initialBalance = 100.0;
-    const tokenSymbol = TOP_30_TOKENS.find(t => t.id === tokenId)?.symbol;
-    if (tokenSymbol === 'BTC' && profileData?.uniqueName === '@rbensonevans') {
+    if (token.symbol === 'BTC' && profileData?.uniqueName === '@rbensonevans') {
       initialBalance = 10.0;
     }
 
-    // Initialize balance in subcollection
+    // Initialize balance in subcollection with explicit token info
     const balanceRef = doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
     setDocumentNonBlocking(balanceRef, {
       id: tokenId,
       tokenId: tokenId,
+      tokenSymbol: token.symbol,
+      tokenName: token.name,
       balance: initialBalance
     }, { merge: true });
 

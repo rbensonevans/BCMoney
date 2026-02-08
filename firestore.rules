@@ -6,31 +6,22 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // User Profile Silo - Root and sub-collections
+    // Explicit Silo Rules: Access is granted if the root ID matches the authenticated UID.
+    // This allows recursive 'get' and 'list' operations on all sub-collections.
+    
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      match /balances/{tokenId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
-      
-      match /recipients/{recipientId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
-
+      // Specifically allow access to all sub-collections (balances, recipients)
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // Account Silo - Root and sub-collections
     match /accounts/{accountId} {
       allow read, write: if isSignedIn() && request.auth.uid == accountId;
       
-      match /transactions/{transactionId} {
-        allow read, write: if isSignedIn() && request.auth.uid == accountId;
-      }
-
+      // Specifically allow access to the transactions collection and its documents
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == accountId;
       }
