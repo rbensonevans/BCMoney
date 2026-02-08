@@ -8,16 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowUpRight, AlertCircle, Info, ArrowLeft } from "lucide-react"
+import { ArrowUpRight, AlertCircle, Info, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useUser, useFirebase } from "@/firebase"
+import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function WithdrawPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const token = searchParams.get('token') || 'ETH'
+  const tokenSymbol = searchParams.get('token') || 'ETH'
   const { user } = useUser()
   const { firestore } = useFirebase()
   
@@ -25,32 +26,63 @@ export default function WithdrawPage() {
   const [amount, setAmount] = useState("")
   const { toast } = useToast()
 
+  // Find token ID
+  const currentToken = TOP_30_TOKENS.find(t => t.symbol === tokenSymbol)
+  const tokenId = currentToken?.id
+
+  const balanceRef = useMemoFirebase(() => {
+    if (!firestore || !user || !tokenId) return null;
+    return doc(firestore, 'user_profiles', user.uid, 'balances', tokenId);
+  }, [firestore, user, tokenId]);
+
+  const { data: balanceData, isLoading: isBalanceLoading } = useDoc(balanceRef);
+  const currentBalance = balanceData?.balance ?? 0;
+
   const handleWithdraw = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user || !firestore) return;
+    if (!user || !firestore || !tokenId) return;
 
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) return;
 
-    // 1. Record the transaction
-    const txnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    if (numAmount > currentBalance) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient balance",
+            description: `You only have ${currentBalance.toLocaleString()} ${tokenSymbol} available.`
+        })
+        return;
+    }
+
+    // 1. Record the transaction in the new nested path
+    const transactionsRef = collection(firestore, 'user_profiles', user.uid, 'balances', tokenId, 'transactions');
+    const txnRef = doc(transactionsRef);
     setDocumentNonBlocking(txnRef, {
       id: txnRef.id,
-      accountId: user.uid,
+      tokenBalanceId: tokenId,
       transactionDate: new Date().toISOString(),
       amount: -numAmount,
       transactionType: 'withdrawal',
-      tokenSymbol: token,
+      tokenSymbol: tokenSymbol,
       recipientAccountId: address // External address
     }, { merge: true });
 
+    // 2. Update balance
+    if (balanceRef) {
+        setDocumentNonBlocking(balanceRef, {
+            balance: currentBalance - numAmount,
+            tokenId: tokenId,
+            id: tokenId
+        }, { merge: true });
+    }
+
     toast({
       title: "Withdrawal Initiated",
-      description: `Sending ${amount} ${token} to ${address.substring(0, 6)}...`,
+      description: `Sending ${amount} ${tokenSymbol} to ${address.substring(0, 6)}...`,
     })
 
     setTimeout(() => {
-      router.push(`/transactions?token=${token}`);
+      router.push(`/transactions?token=${tokenSymbol}&tokenId=${tokenId}`);
     }, 1000);
   }
 
@@ -62,19 +94,23 @@ export default function WithdrawPage() {
             <ArrowLeft className="h-3 w-3" /> Back to MyTokens
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold text-primary">Withdraw Funds</h1>
-        <p className="text-muted-foreground">Transfer your {token} balance to an external wallet</p>
+        <h1 className="text-3xl font-bold text-primary">Withdraw {tokenSymbol}</h1>
+        <p className="text-muted-foreground">Transfer your {tokenSymbol} balance to an external wallet</p>
       </div>
 
-      <Card className="shadow-lg border-none">
-        <CardHeader>
-          <CardTitle>Transfer Details</CardTitle>
-          <CardDescription>Asset: {token}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Card className="shadow-lg border-none overflow-hidden">
+        <div className="bg-primary/5 p-6 border-b flex flex-col items-center">
+          <p className="text-xs text-muted-foreground uppercase font-bold mb-1">Available Balance</p>
+          {isBalanceLoading ? (
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          ) : (
+            <p className="text-2xl font-black text-primary">{currentBalance.toLocaleString()} {tokenSymbol}</p>
+          )}
+        </div>
+        <CardContent className="pt-6">
           <form onSubmit={handleWithdraw} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="address">Destination {token} Address</Label>
+              <Label htmlFor="address">Destination {tokenSymbol} Address</Label>
               <Input 
                 id="address" 
                 placeholder="0x..." 
@@ -85,7 +121,7 @@ export default function WithdrawPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount ({token})</Label>
+              <Label htmlFor="amount">Amount ({tokenSymbol})</Label>
               <div className="relative">
                 <Input 
                   id="amount" 
@@ -98,12 +134,12 @@ export default function WithdrawPage() {
                   className="pr-12"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold">
-                  {token}
+                  {tokenSymbol}
                 </span>
               </div>
               <div className="flex justify-between text-xs text-muted-foreground px-1">
                 <span>Network Fee included</span>
-                <button type="button" className="text-secondary font-semibold hover:underline" onClick={() => setAmount("10.0")}>Max Amount</button>
+                <button type="button" className="text-secondary font-semibold hover:underline" onClick={() => setAmount(currentBalance.toString())}>Max Amount</button>
               </div>
             </div>
 
@@ -114,7 +150,7 @@ export default function WithdrawPage() {
               </p>
             </div>
 
-            <Button type="submit" className="w-full bg-primary h-12 gap-2 text-lg">
+            <Button type="submit" className="w-full bg-primary h-12 gap-2 text-lg" disabled={isBalanceLoading}>
               <ArrowUpRight className="h-5 w-5" /> Confirm Withdrawal
             </Button>
           </form>

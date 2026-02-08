@@ -6,35 +6,33 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Explicit Silo Rules: Access is granted if the root ID matches the authenticated UID.
-    
+    // User Profile Silo
     match /user_profiles/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Specifically allow access to all sub-collections
       match /balances/{tokenId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
+        
+        match /transactions/{transactionId} {
+          allow read, write: if isSignedIn() && request.auth.uid == userId;
+        }
       }
+      
       match /recipients/{recipientId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
       
-      // Secondary catch-all for any other nested structures
+      // Recursive safety
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
+    // Account Silo
     match /accounts/{accountId} {
-      // The Account document itself is accessible by the owner
       allow read, write: if isSignedIn() && request.auth.uid == accountId;
       
-      // Transactions collection must be explicitly allowed for 'list' and 'write'
-      match /transactions/{transactionId} {
-        allow read, write: if isSignedIn() && request.auth.uid == accountId;
-      }
-      
-      // Secondary catch-all for any other nested structures
+      // Recursive safety
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == accountId;
       }

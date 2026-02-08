@@ -19,7 +19,7 @@ import { TOP_30_TOKENS } from "@/lib/market-data"
 export default function SendPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const token = searchParams.get('token') || 'BTC'
+  const tokenSymbol = searchParams.get('token') || 'BTC'
   const { user } = useUser()
   const { firestore } = useFirebase()
   
@@ -27,8 +27,8 @@ export default function SendPage() {
   const [amount, setAmount] = useState("")
   const { toast } = useToast()
 
-  // Find token ID and fetch real balance from Firestore
-  const currentToken = TOP_30_TOKENS.find(t => t.symbol === token)
+  // Find token ID
+  const currentToken = TOP_30_TOKENS.find(t => t.symbol === tokenSymbol)
   const tokenId = currentToken?.id
 
   const balanceRef = useMemoFirebase(() => {
@@ -57,20 +57,21 @@ export default function SendPage() {
         toast({
             variant: "destructive",
             title: "Insufficient balance",
-            description: `You only have ${currentBalance.toLocaleString()} ${token} available.`
+            description: `You only have ${currentBalance.toLocaleString()} ${tokenSymbol} available.`
         })
         return;
     }
 
-    // 1. Record the transaction
-    const txnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    // 1. Record the transaction in the new nested path
+    const transactionsRef = collection(firestore, 'user_profiles', user.uid, 'balances', tokenId, 'transactions');
+    const txnRef = doc(transactionsRef);
     setDocumentNonBlocking(txnRef, {
       id: txnRef.id,
-      accountId: user.uid,
+      tokenBalanceId: tokenId,
       transactionDate: new Date().toISOString(),
       amount: -numAmount,
       transactionType: 'send',
-      tokenSymbol: token,
+      tokenSymbol: tokenSymbol,
       recipientAccountId: recipient
     }, { merge: true });
 
@@ -85,11 +86,11 @@ export default function SendPage() {
 
     toast({
       title: "Funds Sent",
-      description: `Successfully sent ${amount} ${token} to ${recipient}`,
+      description: `Successfully sent ${amount} ${tokenSymbol} to ${recipient}`,
     })
 
     setTimeout(() => {
-      router.push(`/transactions?token=${token}`);
+      router.push(`/transactions?token=${tokenSymbol}&tokenId=${tokenId}`);
     }, 1000);
   }
 
@@ -107,19 +108,19 @@ export default function SendPage() {
             <ArrowLeft className="h-3 w-3" /> Back to MyTokens
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold text-primary">Send {token}</h1>
+        <h1 className="text-3xl font-bold text-primary">Send {tokenSymbol}</h1>
         <p className="text-muted-foreground">Instantly transfer funds to any BCMoney user</p>
       </div>
 
       <Card className="shadow-lg border-none overflow-hidden">
         <div className="bg-primary p-6 text-primary-foreground flex flex-col items-center">
-          <p className="text-sm opacity-80 uppercase tracking-widest mb-1">Available {token}</p>
+          <p className="text-sm opacity-80 uppercase tracking-widest mb-1">Available {tokenSymbol}</p>
           {isBalanceLoading ? (
             <div className="h-10 flex items-center">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
-            <p className="text-4xl font-bold">{currentBalance.toLocaleString()} {token}</p>
+            <p className="text-4xl font-bold">{currentBalance.toLocaleString()} {tokenSymbol}</p>
           )}
         </div>
         <CardHeader>
@@ -145,7 +146,7 @@ export default function SendPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount ({token})</Label>
+                <Label htmlFor="amount">Amount ({tokenSymbol})</Label>
                 <div className="relative">
                   <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input 
@@ -159,7 +160,7 @@ export default function SendPage() {
                     className="pl-10"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
-                    {token}
+                    {tokenSymbol}
                   </span>
                 </div>
               </div>

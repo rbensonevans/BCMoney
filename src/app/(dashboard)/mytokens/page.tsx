@@ -32,7 +32,6 @@ function TokenIcon({ token, size = 32 }: { token: any, size?: number }) {
       </div>
     )
   }
-  // ... other icons (keeping original logic)
   return (
     <div className="rounded-full overflow-hidden bg-muted relative shrink-0" style={{ width: size, height: size }}>
       <Image 
@@ -196,7 +195,7 @@ export default function MyTokensPage() {
                             </Link>
                           </Button>
                           <Button variant="link" asChild className="text-muted-foreground p-0 h-auto">
-                            <Link href={`/transactions?token=${token.symbol}`}>
+                            <Link href={`/transactions?token=${token.symbol}&tokenId=${token.id}`}>
                               <History className="h-3 w-3 mr-1" /> Txn
                             </Link>
                           </Button>

@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -16,53 +16,44 @@ import {
 } from "@/components/ui/table"
 import { History, ArrowDownLeft, ArrowUpRight, Repeat, Send, ArrowLeft, Loader2, Trash2, Database } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useUser, useFirebase, useCollection, useDoc, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where, getDocs, doc, writeBatch } from "firebase/firestore"
+import { useUser, useFirebase, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, getDocs, doc, writeBatch } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
+import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function TransactionsPage() {
   const { user } = useUser()
   const { firestore } = useFirebase()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token') || 'BTC'
+  const symbol = searchParams.get('token') || 'BTC'
+  const tokenId = searchParams.get('tokenId') || TOP_30_TOKENS.find(t => t.symbol === symbol)?.id || '1'
   const { toast } = useToast()
   const [isClearing, setIsClearing] = useState(false)
   const [isSeeding, setIsSeeding] = useState(false)
 
-  // 1. Get Profile first to ensure auth context is fully ready
-  const profileRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return doc(firestore, 'user_profiles', user.uid);
-  }, [firestore, user]);
-
-  const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
-
-  // 2. Setup Transactions Reference - Only if profile exists to ensure user silo is ready
+  // 1. Setup Transactions Reference - Nested under TokenBalance
   const transactionsRef = useMemoFirebase(() => {
-    if (!firestore || !user || !profileData) return null;
-    return collection(firestore, 'accounts', user.uid, 'transactions');
-  }, [firestore, user, profileData]);
+    if (!firestore || !user || !tokenId) return null;
+    return collection(firestore, 'user_profiles', user.uid, 'balances', tokenId, 'transactions');
+  }, [firestore, user, tokenId]);
 
-  // 3. Setup real-time Query for the selected token
+  // 2. Setup real-time Query
   const transactionsQuery = useMemoFirebase(() => {
     if (!transactionsRef) return null;
     return query(
       transactionsRef, 
-      where('tokenSymbol', '==', token),
       orderBy('transactionDate', 'desc')
     );
-  }, [transactionsRef, token]);
+  }, [transactionsRef]);
 
   const { data: transactions, isLoading: isTxnLoading } = useCollection(transactionsQuery);
 
   const handleClearHistory = async () => {
-    if (!transactionsRef || !firestore || !user) return;
+    if (!transactionsRef || !firestore) return;
     
     setIsClearing(true);
     try {
-      // Get all transactions for this token specifically to clear
-      const q = query(transactionsRef, where('tokenSymbol', '==', token));
-      const snapshot = await getDocs(q);
+      const snapshot = await getDocs(transactionsRef);
       
       if (snapshot.empty) {
         toast({ title: "History is already empty" });
@@ -76,13 +67,13 @@ export default function TransactionsPage() {
       
       toast({
         title: "History Cleared",
-        description: `All ${token} transactions have been permanently removed from Firestore.`,
+        description: `All ${symbol} transactions have been permanently removed.`,
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Clear Failed",
-        description: "Could not clear history from Firestore. " + error.message,
+        description: error.message,
       });
     } finally {
       setIsClearing(false);
@@ -106,11 +97,11 @@ export default function TransactionsPage() {
         const newDocRef = doc(transactionsRef);
         batch.set(newDocRef, {
           id: newDocRef.id,
-          accountId: user.uid,
+          tokenBalanceId: tokenId,
           transactionDate: sample.date,
           amount: sample.amount,
           transactionType: sample.type,
-          tokenSymbol: token,
+          tokenSymbol: symbol,
           recipientAccountId: sample.recipient || null
         });
       }
@@ -118,7 +109,7 @@ export default function TransactionsPage() {
 
       toast({
         title: "Sample Data Seeded",
-        description: `Successfully added ${samples.length} real transaction records to your ${token} collection.`,
+        description: `Added ${samples.length} records to your ${symbol} collection.`,
       });
     } catch (error: any) {
       toast({
@@ -131,9 +122,6 @@ export default function TransactionsPage() {
     }
   };
 
-  // Logic to show loading state only when we actually expect data but don't have it yet
-  const showLoading = isProfileLoading || (isTxnLoading && !!profileData);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -144,9 +132,9 @@ export default function TransactionsPage() {
             </Link>
           </Button>
           <h1 className="text-3xl font-bold text-primary flex items-center gap-2">
-            <History className="h-8 w-8" /> Transactions
+            <History className="h-8 w-8" /> {symbol} Transactions
           </h1>
-          <p className="text-muted-foreground">Live transaction history for your {token} wallet</p>
+          <p className="text-muted-foreground">Private transaction history for your {symbol} wallet</p>
         </div>
         
         <div className="flex gap-2">
@@ -155,7 +143,7 @@ export default function TransactionsPage() {
             size="sm" 
             className="text-primary border-primary/20 hover:bg-primary/10"
             onClick={handleSeedHistory}
-            disabled={isSeeding || showLoading}
+            disabled={isSeeding || isTxnLoading}
           >
             {isSeeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
             Seed Samples
@@ -169,7 +157,7 @@ export default function TransactionsPage() {
               disabled={isClearing}
             >
               {isClearing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-              Clear {token} History
+              Clear {symbol} History
             </Button>
           )}
         </div>
@@ -177,11 +165,11 @@ export default function TransactionsPage() {
 
       <Card className="shadow-sm border-none">
         <CardHeader>
-          <CardTitle>{token} History</CardTitle>
-          <CardDescription>Real-time updates from your private financial layer</CardDescription>
+          <CardTitle>History Log</CardTitle>
+          <CardDescription>Real-time data from your private portfolio layer</CardDescription>
         </CardHeader>
         <CardContent>
-          {showLoading ? (
+          {isTxnLoading ? (
             <div className="flex items-center justify-center h-48">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -203,7 +191,7 @@ export default function TransactionsPage() {
                         <div className="flex flex-col items-center gap-2">
                           <History className="h-8 w-8 opacity-20" />
                           <p className="font-semibold text-lg">No history found</p>
-                          <p className="text-sm">Start by sending funds or click "Seed Samples" to test the UI.</p>
+                          <p className="text-sm">Start by depositing funds or use "Seed Samples".</p>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -234,7 +222,7 @@ export default function TransactionsPage() {
                           "text-right font-mono font-bold",
                           tx.amount > 0 ? "text-green-600" : "text-red-600"
                         )}>
-                          {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString()} {token}
+                          {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString()} {symbol}
                         </TableCell>
                         <TableCell className="text-right">
                           <span className="px-2 py-0.5 rounded-full bg-muted text-[10px] font-bold uppercase tracking-tight">

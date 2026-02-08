@@ -15,40 +15,45 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { Repeat, ArrowRightLeft, Wallet, ArrowLeft } from "lucide-react"
+import { Repeat, ArrowRightLeft, Wallet, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useUser, useFirebase } from "@/firebase"
+import { useUser, useFirebase, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, collection } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
-
-const TOKENS = [
-  { id: '1', name: 'Bitcoin', symbol: 'BTC', price: 67432.10, balance: 0.25 },
-  { id: '2', name: 'Ethereum', symbol: 'ETH', price: 3542.89, balance: 4.5 },
-  { id: '3', name: 'Tether', symbol: 'USDT', price: 1.00, balance: 1250.00 },
-  { id: '4', name: 'BNB', symbol: 'BNB', price: 589.45, balance: 12.0 },
-  { id: '5', name: 'Solana', symbol: 'SOL', price: 145.67, balance: 45.0 },
-  { id: '6', name: 'XRP', symbol: 'XRP', price: 0.62, balance: 1000.0 },
-  { id: '7', name: 'USDC', symbol: 'USDC', price: 1.00, balance: 500.0 },
-  { id: '8', name: 'Cardano', symbol: 'ADA', price: 0.45, balance: 2500.0 },
-  { id: '9', name: 'Avalanche', symbol: 'AVAX', price: 35.89, balance: 15.0 },
-  { id: '10', name: 'Dogecoin', symbol: 'DOGE', price: 0.16, balance: 50000.0 },
-]
+import { TOP_30_TOKENS } from "@/lib/market-data"
 
 export default function TradePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const sourceToken = searchParams.get('token') || 'BTC'
+  const sourceTokenSymbol = searchParams.get('token') || 'BTC'
   const { toast } = useToast()
   const { user } = useUser()
   const { firestore } = useFirebase()
   
-  const [targetToken, setTargetToken] = useState(sourceToken === "ETH" ? "BTC" : "ETH")
+  const [targetTokenSymbol, setTargetTokenSymbol] = useState(sourceTokenSymbol === "ETH" ? "BTC" : "ETH")
   const [amount, setAmount] = useState("")
 
-  const selectedTokenData = TOKENS.find(t => t.symbol === sourceToken) || TOKENS[0]
-  const targetTokenData = TOKENS.find(t => t.symbol === targetToken) || TOKENS[1]
+  const sourceTokenData = TOP_30_TOKENS.find(t => t.symbol === sourceTokenSymbol) || TOP_30_TOKENS[0]
+  const targetTokenData = TOP_30_TOKENS.find(t => t.symbol === targetTokenSymbol) || TOP_30_TOKENS[1]
   
-  const exchangeRate = selectedTokenData.price / targetTokenData.price
+  const exchangeRate = sourceTokenData.price / targetTokenData.price
+
+  // Fetch balances
+  const sourceBalanceRef = useMemoFirebase(() => {
+    if (!firestore || !user || !sourceTokenData.id) return null;
+    return doc(firestore, 'user_profiles', user.uid, 'balances', sourceTokenData.id);
+  }, [firestore, user, sourceTokenData.id]);
+
+  const targetBalanceRef = useMemoFirebase(() => {
+    if (!firestore || !user || !targetTokenData.id) return null;
+    return doc(firestore, 'user_profiles', user.uid, 'balances', targetTokenData.id);
+  }, [firestore, user, targetTokenData.id]);
+
+  const { data: sourceBalanceData, isLoading: isSourceLoading } = useDoc(sourceBalanceRef);
+  const { data: targetBalanceData, isLoading: isTargetLoading } = useDoc(targetBalanceRef);
+
+  const currentSourceBalance = sourceBalanceData?.balance ?? 0;
+  const currentTargetBalance = targetBalanceData?.balance ?? 0;
 
   const handleTrade = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,35 +62,62 @@ export default function TradePage() {
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) return;
 
-    // 1. Record the "Sell" part of the trade
-    const sellTxnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    if (numAmount > currentSourceBalance) {
+        toast({
+            variant: "destructive",
+            title: "Insufficient balance",
+            description: `You only have ${currentSourceBalance.toLocaleString()} ${sourceTokenSymbol} available.`
+        })
+        return;
+    }
+
+    const targetAmount = numAmount * exchangeRate;
+
+    // 1. Record the "Sell" part of the trade (Nested under Source Token)
+    const sellTxnsRef = collection(firestore, 'user_profiles', user.uid, 'balances', sourceTokenData.id, 'transactions');
+    const sellTxnRef = doc(sellTxnsRef);
     setDocumentNonBlocking(sellTxnRef, {
       id: sellTxnRef.id,
-      accountId: user.uid,
+      tokenBalanceId: sourceTokenData.id,
       transactionDate: new Date().toISOString(),
       amount: -numAmount,
       transactionType: 'trade',
-      tokenSymbol: sourceToken,
+      tokenSymbol: sourceTokenSymbol,
+      recipientAccountId: `Bought ${targetTokenSymbol}`
     }, { merge: true });
 
-    // 2. Record the "Buy" part of the trade
-    const buyTxnRef = doc(collection(firestore, 'accounts', user.uid, 'transactions'));
+    // 2. Record the "Buy" part of the trade (Nested under Target Token)
+    const buyTxnsRef = collection(firestore, 'user_profiles', user.uid, 'balances', targetTokenData.id, 'transactions');
+    const buyTxnRef = doc(buyTxnsRef);
     setDocumentNonBlocking(buyTxnRef, {
       id: buyTxnRef.id,
-      accountId: user.uid,
+      tokenBalanceId: targetTokenData.id,
       transactionDate: new Date().toISOString(),
-      amount: numAmount * exchangeRate,
+      amount: targetAmount,
       transactionType: 'trade',
-      tokenSymbol: targetToken,
+      tokenSymbol: targetTokenSymbol,
+      recipientAccountId: `Sold ${sourceTokenSymbol}`
     }, { merge: true });
+
+    // 3. Update Balances
+    if (sourceBalanceRef) {
+        setDocumentNonBlocking(sourceBalanceRef, {
+            balance: currentSourceBalance - numAmount
+        }, { merge: true });
+    }
+    if (targetBalanceRef) {
+        setDocumentNonBlocking(targetBalanceRef, {
+            balance: currentTargetBalance + targetAmount
+        }, { merge: true });
+    }
 
     toast({
       title: "Trade Executed",
-      description: `Successfully swapped ${amount} ${sourceToken} for ${targetToken}.`,
+      description: `Successfully swapped ${amount} ${sourceTokenSymbol} for ${targetTokenSymbol}.`,
     })
 
     setTimeout(() => {
-      router.push(`/transactions?token=${sourceToken}`);
+      router.push(`/transactions?token=${sourceTokenSymbol}&tokenId=${sourceTokenData.id}`);
     }, 1000);
   }
 
@@ -106,7 +138,7 @@ export default function TradePage() {
       <Card className="shadow-lg border-none">
         <CardHeader>
           <CardTitle>Instant Swap</CardTitle>
-          <CardDescription>Convert {sourceToken} to any other supported asset</CardDescription>
+          <CardDescription>Convert {sourceTokenSymbol} to any other supported asset</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleTrade} className="space-y-8">
@@ -115,7 +147,7 @@ export default function TradePage() {
                 <div className="flex justify-between items-center text-sm">
                   <Label>Sell</Label>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Wallet className="h-3 w-3" /> Balance: {selectedTokenData.balance.toLocaleString()} {selectedTokenData.symbol}
+                    <Wallet className="h-3 w-3" /> Balance: {isSourceLoading ? "..." : currentSourceBalance.toLocaleString()} {sourceTokenSymbol}
                   </span>
                 </div>
                 <div className="flex gap-4">
@@ -129,7 +161,7 @@ export default function TradePage() {
                     required
                   />
                   <div className="flex items-center px-4 bg-card rounded-lg border font-bold h-14">
-                    {selectedTokenData.symbol}
+                    {sourceTokenSymbol}
                   </div>
                 </div>
               </div>
@@ -141,7 +173,12 @@ export default function TradePage() {
               </div>
 
               <div className="p-4 bg-muted/50 rounded-xl border space-y-3">
-                <Label>Buy</Label>
+                <div className="flex justify-between items-center text-sm">
+                   <Label>Buy</Label>
+                   <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Wallet className="h-3 w-3" /> Balance: {isTargetLoading ? "..." : currentTargetBalance.toLocaleString()} {targetTokenSymbol}
+                  </span>
+                </div>
                 <div className="flex gap-4">
                   <Input 
                     readOnly
@@ -149,12 +186,12 @@ export default function TradePage() {
                     className="text-2xl font-bold h-14 bg-transparent border-none focus-visible:ring-0 px-0"
                     value={amount ? (parseFloat(amount) * exchangeRate).toFixed(4) : ""}
                   />
-                  <Select value={targetToken} onValueChange={setTargetToken}>
+                  <Select value={targetTokenSymbol} onValueChange={setTargetTokenSymbol}>
                     <SelectTrigger className="w-[140px] h-14 font-bold">
                       <SelectValue placeholder="Target" />
                     </SelectTrigger>
                     <SelectContent>
-                      {TOKENS.filter(t => t.symbol !== sourceToken).map(t => (
+                      {TOP_30_TOKENS.filter(t => t.symbol !== sourceTokenSymbol).map(t => (
                         <SelectItem key={t.symbol} value={t.symbol}>{t.symbol}</SelectItem>
                       ))}
                     </SelectContent>
@@ -166,7 +203,7 @@ export default function TradePage() {
             <div className="bg-muted/30 p-4 rounded-lg space-y-2">
                 <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Exchange Rate</span>
-                    <span className="font-mono font-medium">1 {sourceToken} = {exchangeRate.toFixed(6)} {targetToken}</span>
+                    <span className="font-mono font-medium">1 {sourceTokenSymbol} = {exchangeRate.toFixed(6)} {targetTokenSymbol}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Fee</span>
@@ -174,7 +211,7 @@ export default function TradePage() {
                 </div>
             </div>
 
-            <Button type="submit" className="w-full h-14 text-lg bg-secondary hover:bg-secondary/90 shadow-md">
+            <Button type="submit" className="w-full h-14 text-lg bg-secondary hover:bg-secondary/90 shadow-md" disabled={isSourceLoading || isTargetLoading}>
               Confirm Trade
             </Button>
           </form>

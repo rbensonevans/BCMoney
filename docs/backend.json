@@ -152,9 +152,9 @@
           "type": "string",
           "description": "Unique identifier for the transaction."
         },
-        "accountId": {
+        "tokenBalanceId": {
           "type": "string",
-          "description": "Reference to Account. (Relationship: Account 1:N Transaction)"
+          "description": "Reference to TokenBalance. (Relationship: TokenBalance 1:N Transaction)"
         },
         "transactionDate": {
           "type": "string",
@@ -175,13 +175,13 @@
         },
         "recipientAccountId": {
           "type": "string",
-          "description": "Reference to recipient Account (if applicable).",
-          "format": "uuid"
+          "description": "Reference to recipient Account or external address.",
+          "format": "string"
         }
       },
       "required": [
         "id",
-        "accountId",
+        "tokenBalanceId",
         "transactionDate",
         "amount",
         "transactionType",
@@ -253,6 +253,16 @@
         }
       },
       {
+        "path": "/user_profiles/{userProfileId}/balances/{tokenId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores transaction history for a specific token balance."
+        }
+      },
+      {
         "path": "/accounts/{accountId}",
         "definition": {
           "entityName": "Account",
@@ -260,16 +270,6 @@
             "$ref": "#/backend/entities/Account"
           },
           "description": "Stores user account identity (handle, eth address, base balance)."
-        }
-      },
-      {
-        "path": "/accounts/{accountId}/transactions/{transactionId}",
-        "definition": {
-          "entityName": "Transaction",
-          "schema": {
-            "$ref": "#/backend/entities/Transaction"
-          },
-          "description": "Stores transaction history for a specific account."
         }
       },
       {
